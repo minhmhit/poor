@@ -1,0 +1,323 @@
+<%- include('../partials/header') %>
+
+<div class="container py-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/">Trang chủ</a></li>
+            <li class="breadcrumb-item"><a href="/user/orders">Đơn hàng của tôi</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Chi tiết đơn hàng #<%= order.id %></li>
+        </ol>
+    </nav>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Chi tiết đơn hàng #<%= order.id %></h1>
+        <div>
+            <% if (order.status === 'pending') { %>
+                <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#cancelOrderModal">
+                    Hủy đơn hàng
+                </button>
+            <% } %>
+            <a href="/user/orders" class="btn btn-outline-secondary ms-2">Quay lại</a>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="card-title mb-0">Sản phẩm đã đặt</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Sản phẩm</th>
+                                    <th class="text-center">Đơn giá</th>
+                                    <th class="text-center">Số lượng</th>
+                                    <th class="text-end">Thành tiền</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% order.items.forEach(item => { %>
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <% if (item.image_url) { %>
+                                                    <img src="<%= item.image_url %>" alt="<%= item.name %>" class="img-thumbnail me-3" style="width: 60px; height: 60px; object-fit: cover;">
+                                                <% } else { %>
+                                                    <div class="bg-secondary text-white me-3 d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                                                        <i class="fas fa-coffee"></i>
+                                                    </div>
+                                                <% } %>
+                                                <div>
+                                                    <h6 class="mb-0"><%= item.name %></h6>
+                                                    <a href="/products/<%= item.product_id %>" class="text-decoration-none">Xem sản phẩm</a>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="text-center"><%= parseInt(item.price).toLocaleString('vi-VN') %> ₫</td>
+                                        <td class="text-center"><%= item.quantity %></td>
+                                        <td class="text-end"><%= (item.price * item.quantity).toLocaleString('vi-VN') %> ₫</td>
+                                    </tr>
+                                <% }) %>
+                            </tbody>
+                            <tfoot class="table-group-divider">
+                                <tr>
+                                    <td colspan="3" class="text-end fw-bold">Tạm tính:</td>
+                                    <td class="text-end"><%= parseInt(order.total_amount).toLocaleString('vi-VN') %> ₫</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="3" class="text-end fw-bold">Phí vận chuyển:</td>
+                                    <td class="text-end">30.000 ₫</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="3" class="text-end fw-bold">Tổng cộng:</td>
+                                    <td class="text-end fw-bold text-danger"><%= ( parseInt(30000) + parseInt(order.total_amount) ).toLocaleString('vi-VN') %> ₫</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="card-title mb-0">Thông tin đơn hàng</h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-2">
+                        <strong>Mã đơn hàng:</strong> #<%= order.id %>
+                    </p>
+                    <p class="mb-2">
+                        <strong>Ngày đặt hàng:</strong> <%= new Date(order.created_at).toLocaleString('vi-VN') %>
+                    </p>
+                    <p class="mb-2">
+                        <strong>Trạng thái:</strong> 
+                        <% if (order.status === 'pending') { %>
+                            <span class="badge bg-warning text-dark">Chờ xác nhận</span>
+                        <% } else if (order.status === 'processing') { %>
+                            <span class="badge bg-info">Đang xử lý</span>
+                        <% } else if (order.status === 'shipping') { %>
+                            <span class="badge bg-primary">Đang giao hàng</span>
+                        <% } else if (order.status === 'completed') { %>
+                            <span class="badge bg-success">Đã giao hàng</span>
+                        <% } else if (order.status === 'cancelled') { %>
+                            <span class="badge bg-danger">Đã hủy</span>
+                        <% } %>
+                    </p>
+                    <p class="mb-0">
+                        <strong>Phương thức thanh toán:</strong> 
+                        <% if (order.payment_method === 'cod') { %>
+                            Thanh toán khi nhận hàng (COD)
+                        <% } else if (order.payment_method === 'bank') { %>
+                            Chuyển khoản ngân hàng
+                        <% } else if (order.payment_method === 'momo') { %>
+                            Ví điện tử MoMo
+                        <% } else { %>
+                            <%= order.payment_method %>
+                        <% } %>
+                    </p>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="card-title mb-0">Thông tin giao hàng</h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-2">
+                        <strong>Tên người nhận:</strong> <%= order.customer_name %>
+                    </p>
+                    <p class="mb-2">
+                        <strong>Email:</strong> <%= order.customer_email %>
+                    </p>
+                    <p class="mb-2">
+                        <strong>Số điện thoại:</strong> <%= order.contact_phone %>
+                    </p>
+                    <p class="mb-0">
+                        <strong>Địa chỉ giao hàng:</strong> <%= order.shipping_address %>
+                    </p>
+                </div>
+            </div>
+            
+            <% if (order.note) { %>
+                <div class="card mb-4">
+                    <div class="card-header bg-white">
+                        <h5 class="card-title mb-0">Ghi chú</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-0"><%= order.note %></p>
+                    </div>
+                </div>
+            <% } %>
+            
+            <% if (order.shipping && order.status !== 'cancelled') { %>
+                <div class="card mb-4">
+                    <div class="card-header bg-white">
+                        <h5 class="card-title mb-0">Thông tin vận chuyển</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-2">
+                            <strong>Đơn vị vận chuyển:</strong> <%= order.shipping.shipping_provider %>
+                        </p>
+                        <% if (order.shipping.tracking_number) { %>
+                            <p class="mb-2">
+                                <strong>Mã vận đơn:</strong> <%= order.shipping.tracking_number %>
+                            </p>
+                        <% } %>
+                        <% if (order.shipping.estimated_delivery_date) { %>
+                            <p class="mb-2">
+                                <strong>Dự kiến giao hàng:</strong> <%= new Date(order.shipping.estimated_delivery_date).toLocaleDateString('vi-VN') %>
+                            </p>
+                        <% } %>
+                        <% if (order.shipping.status) { %>
+                            <p class="mb-0">
+                                <strong>Trạng thái:</strong> 
+                                <% if (order.shipping.status === 'pending') { %>
+                                    <span class="badge bg-warning text-dark">Đang chuẩn bị</span>
+                                <% } else if (order.shipping.status === 'processing') { %>
+                                    <span class="badge bg-info">Đang xử lý</span>
+                                <% } else if (order.shipping.status === 'shipping') { %>
+                                    <span class="badge bg-primary">Đang giao hàng</span>
+                                <% } else if (order.shipping.status === 'delivered') { %>
+                                    <span class="badge bg-success">Đã giao hàng</span>
+                                <% } else { %>
+                                    <span class="badge bg-secondary"><%= order.shipping.status %></span>
+                                <% } %>
+                            </p>
+                        <% } %>
+                    </div>
+                </div>
+            <% } %>
+            
+            <% if (order.status_history && order.status_history.length > 0) { %>
+                <div class="card">
+                    <div class="card-header bg-white">
+                        <h5 class="card-title mb-0">Lịch sử đơn hàng</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <ul class="list-group list-group-flush">
+                            <% order.status_history.forEach(history => { %>
+                                <li class="list-group-item">
+                                    <div class="d-flex justify-content-between">
+                                        <span>
+                                            <% if (history.status === 'pending') { %>
+                                                <span class="badge bg-warning text-dark">Chờ xác nhận</span>
+                                            <% } else if (history.status === 'processing') { %>
+                                                <span class="badge bg-info">Đang xử lý</span>
+                                            <% } else if (history.status === 'shipping') { %>
+                                                <span class="badge bg-primary">Đang giao hàng</span>
+                                            <% } else if (history.status === 'completed') { %>
+                                                <span class="badge bg-success">Đã giao hàng</span>
+                                            <% } else if (history.status === 'cancelled') { %>
+                                                <span class="badge bg-danger">Đã hủy</span>
+                                            <% } else { %>
+                                                <span class="badge bg-secondary"><%= history.status %></span>
+                                            <% } %>
+                                            <% if (history.note) { %>
+                                                <%= history.note %>
+                                            <% } %>
+                                        </span>
+                                        <small class="text-muted"><%= new Date(history.created_at).toLocaleString('vi-VN') %></small>
+                                    </div>
+                                </li>
+                            <% }) %>
+                        </ul>
+                    </div>
+                </div>
+            <% } %>
+        </div>
+    </div>
+</div>
+
+<!-- Modal hủy đơn hàng -->
+<% if (order.status === 'pending') { %>
+    <div class="modal fade" id="cancelOrderModal" tabindex="-1" aria-labelledby="cancelOrderModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="cancelOrderModalLabel">Xác nhận hủy đơn hàng</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Bạn có chắc chắn muốn hủy đơn hàng #<%= order.id %> không?</p>
+                    <p class="text-danger">Lưu ý: Hành động này không thể hoàn tác!</p>
+                    <div class="mb-3">
+                        <label for="cancelReason" class="form-label">Lý do hủy đơn:</label>
+                        <select class="form-select" id="cancelReason">
+                            <option value="Tôi muốn thay đổi địa chỉ giao hàng">Tôi muốn thay đổi địa chỉ giao hàng</option>
+                            <option value="Tôi muốn đổi phương thức thanh toán">Tôi muốn đổi phương thức thanh toán</option>
+                            <option value="Tôi không muốn mua nữa">Tôi không muốn mua nữa</option>
+                            <option value="Tôi đặt nhầm sản phẩm">Tôi đặt nhầm sản phẩm</option>
+                            <option value="Khác">Khác</option>
+                        </select>
+                    </div>
+                    <div class="mb-3" id="otherReasonContainer" style="display: none;">
+                        <label for="otherReason" class="form-label">Lý do khác:</label>
+                        <textarea class="form-control" id="otherReason" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    <button type="button" class="btn btn-danger" id="confirmCancelBtn">Xác nhận hủy</button>
+                </div>
+            </div>
+        </div>
+    </div>
+<% } %>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    <% if (order.status === 'pending') { %>
+        const cancelReasonSelect = document.getElementById('cancelReason');
+        const otherReasonContainer = document.getElementById('otherReasonContainer');
+        const otherReasonInput = document.getElementById('otherReason');
+        const confirmCancelBtn = document.getElementById('confirmCancelBtn');
+        
+        // Hiển thị trường nhập lý do khác khi chọn "Khác"
+        cancelReasonSelect.addEventListener('change', function() {
+            if (this.value === 'Khác') {
+                otherReasonContainer.style.display = 'block';
+            } else {
+                otherReasonContainer.style.display = 'none';
+            }
+        });
+        
+        // Xử lý sự kiện khi nhấn nút xác nhận hủy
+        confirmCancelBtn.addEventListener('click', function() {
+            const reason = (cancelReasonSelect.value === 'Khác') ? otherReasonInput.value : cancelReasonSelect.value;
+            
+            if (cancelReasonSelect.value === 'Khác' && !otherReasonInput.value.trim()) {
+                alert('Vui lòng nhập lý do hủy đơn!');
+                return;
+            }
+            
+            // Gửi yêu cầu hủy đơn hàng
+            fetch(`/user/orders/<%= order.id %>/cancel`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ reason })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.reload();
+                } else {
+                    alert(data.message || 'Có lỗi xảy ra khi hủy đơn hàng!');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Có lỗi xảy ra khi hủy đơn hàng!');
+            });
+        });
+    <% } %>
+});
+</script>
+
+<%- include('../partials/footer') %> 

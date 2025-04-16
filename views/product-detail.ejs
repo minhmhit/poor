@@ -24,7 +24,7 @@
             <h1 class="mb-3"><%= product.name %></h1>
             <p class="badge bg-secondary mb-3"><%= product.category_name %></p>
             
-            <h4 class="text-danger mb-4"><%= product.price.toLocaleString('vi-VN') %> ₫</h4>
+            <h4 class="text-danger mb-4"><%= parseInt(product.price).toLocaleString('vi-VN') %> ₫</h4>
             
             <div class="mb-4">
                 <p><%= product.description %></p>

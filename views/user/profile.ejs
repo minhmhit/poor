@@ -1,0 +1,143 @@
+<%- include('../partials/header') %>
+
+<div class="container py-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/">Trang chủ</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Tài khoản của tôi</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="card-title mb-0">Tài khoản</h5>
+                </div>
+                <div class="list-group list-group-flush">
+                    <a href="/user/profile" class="list-group-item list-group-item-action active">
+                        <i class="fas fa-user me-2"></i> Thông tin cá nhân
+                    </a>
+                    <a href="/user/orders" class="list-group-item list-group-item-action">
+                        <i class="fas fa-shopping-bag me-2"></i> Đơn hàng của tôi
+                    </a>
+                    <a href="/auth/change-password" class="list-group-item list-group-item-action">
+                        <i class="fas fa-key me-2"></i> Đổi mật khẩu
+                    </a>
+                    <a href="/auth/logout" class="list-group-item list-group-item-action text-danger">
+                        <i class="fas fa-sign-out-alt me-2"></i> Đăng xuất
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-9">
+            <div class="card">
+                <div class="card-header bg-white">
+                    <h5 class="card-title mb-0">Thông tin cá nhân</h5>
+                </div>
+                <div class="card-body">
+                    <% if (typeof success !== 'undefined') { %>
+                        <div class="alert alert-success" role="alert">
+                            <%= success %>
+                        </div>
+                    <% } %>
+                    
+                    <% if (typeof error !== 'undefined') { %>
+                        <div class="alert alert-danger" role="alert">
+                            <%= error %>
+                        </div>
+                    <% } %>
+                    
+                    <form action="/user/profile/update" method="POST" id="profile-form">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Họ tên</label>
+                            <input type="text" class="form-control" id="name" name="name" value="<%= user.name %>" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" name="email" value="<%= user.email %>" readonly>
+                            <div class="form-text">Email không thể thay đổi</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="phone" class="form-label">Số điện thoại</label>
+                            <input type="tel" class="form-control" id="phone" name="phone" value="<%= user.phone || '' %>">
+                        </div>
+                        <div class="mb-3">
+                            <label for="address" class="form-label">Địa chỉ</label>
+                            <textarea class="form-control" id="address" name="address" rows="3"><%= user.address || '' %></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Cập nhật thông tin</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const profileForm = document.getElementById('profile-form');
+    
+    if (profileForm) {
+        profileForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Lấy dữ liệu từ form
+            const formData = new FormData(this);
+            const userData = {
+                name: formData.get('name'),
+                phone: formData.get('phone'),
+                address: formData.get('address')
+            };
+            
+            // Gửi yêu cầu cập nhật
+            fetch('/user/profile/update', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(userData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Hiển thị thông báo thành công
+                    const alertDiv = document.createElement('div');
+                    alertDiv.className = 'alert alert-success';
+                    alertDiv.textContent = data.message || 'Cập nhật thông tin thành công!';
+                    
+                    const cardBody = document.querySelector('.card-body');
+                    cardBody.insertBefore(alertDiv, cardBody.firstChild);
+                    
+                    // Tự động xóa thông báo sau 3 giây
+                    setTimeout(() => {
+                        alertDiv.remove();
+                    }, 3000);
+                } else {
+                    // Hiển thị thông báo lỗi
+                    const alertDiv = document.createElement('div');
+                    alertDiv.className = 'alert alert-danger';
+                    alertDiv.textContent = data.message || 'Có lỗi xảy ra khi cập nhật thông tin!';
+                    
+                    const cardBody = document.querySelector('.card-body');
+                    cardBody.insertBefore(alertDiv, cardBody.firstChild);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                
+                // Hiển thị thông báo lỗi
+                const alertDiv = document.createElement('div');
+                alertDiv.className = 'alert alert-danger';
+                alertDiv.textContent = 'Có lỗi xảy ra khi cập nhật thông tin!';
+                
+                const cardBody = document.querySelector('.card-body');
+                cardBody.insertBefore(alertDiv, cardBody.firstChild);
+            });
+        });
+    }
+});
+</script>
+
+<%- include('../partials/footer') %> 

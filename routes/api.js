@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const productModel = require('../models/products');
 const { Cart, saveCartToOrder } = require('../models/cart');
+const orderModel = require('../models/orders');
 
 // API thêm vào giỏ hàng
 router.post('/cart/add', async (req, res) => {
@@ -27,7 +28,7 @@ router.post('/cart/add', async (req, res) => {
     
     res.json({ 
       success: true, 
-      totalQuantity: cart.totalQty,
+      totalQty: cart.totalQty,
       totalPrice: cart.totalPrice 
     });
   } catch (error) {
@@ -57,7 +58,7 @@ router.post('/cart/update', (req, res) => {
     
     res.json({ 
       success: true, 
-      totalQuantity: cart.totalQty,
+      totalQty: cart.totalQty,
       totalPrice: cart.totalPrice,
       cartItems: cart.generateArray()
     });
@@ -83,7 +84,7 @@ router.post('/cart/remove', (req, res) => {
     
     res.json({ 
       success: true, 
-      totalQuantity: cart.totalQty,
+      totalQty: cart.totalQty,
       totalPrice: cart.totalPrice
     });
   } catch (error) {
@@ -95,10 +96,14 @@ router.post('/cart/remove', (req, res) => {
 // API đặt hàng
 router.post('/order', async (req, res) => {
   try {
-    const { name, email, address, phone } = req.body;
+    const { name, email, address, phone, note, payment } = req.body;
     
     if (!req.session.cart || req.session.cart.totalQty === 0) {
       return res.status(400).json({ success: false, message: 'Giỏ hàng trống' });
+    }
+    
+    if (!name || !email || !address || !phone) {
+      return res.status(400).json({ success: false, message: 'Thiếu thông tin giao hàng' });
     }
     
     // Lưu thông tin đơn hàng vào database
@@ -109,7 +114,9 @@ router.post('/order', async (req, res) => {
       name,
       email,
       address,
-      phone
+      phone,
+      note,
+      payment
     };
     
     const orderId = await saveCartToOrder(cart, userId, orderInfo);
@@ -129,6 +136,7 @@ router.post('/order', async (req, res) => {
 router.get('/cart', (req, res) => {
   if (!req.session.cart) {
     return res.json({ 
+      success: true,
       items: [],
       totalQty: 0,
       totalPrice: 0
@@ -137,10 +145,56 @@ router.get('/cart', (req, res) => {
   
   const cart = new Cart(req.session.cart);
   res.json({
+    success: true,
     items: cart.generateArray(),
     totalQty: cart.totalQty,
     totalPrice: cart.totalPrice
   });
+});
+
+// API lấy thông tin đơn hàng
+router.get('/orders/:id', async (req, res) => {
+  try {
+    const orderId = req.params.id;
+    const userId = req.session.user ? req.session.user.id : null;
+    
+    if (!userId) {
+      return res.status(401).json({ success: false, message: 'Vui lòng đăng nhập để xem đơn hàng' });
+    }
+    
+    const order = await orderModel.getOrderById(orderId);
+    
+    if (!order) {
+      return res.status(404).json({ success: false, message: 'Không tìm thấy đơn hàng' });
+    }
+    
+    // Đảm bảo chỉ có thể xem đơn hàng của chính mình (trừ khi là admin)
+    if (order.user_id !== userId && !req.session.user.isAdmin) {
+      return res.status(403).json({ success: false, message: 'Bạn không có quyền xem đơn hàng này' });
+    }
+    
+    res.json({ success: true, order });
+  } catch (error) {
+    console.error('Lỗi khi lấy thông tin đơn hàng:', error);
+    res.status(500).json({ success: false, message: 'Có lỗi xảy ra' });
+  }
+});
+
+// API lấy danh sách đơn hàng của người dùng
+router.get('/orders', async (req, res) => {
+  try {
+    const userId = req.session.user ? req.session.user.id : null;
+    
+    if (!userId) {
+      return res.status(401).json({ success: false, message: 'Vui lòng đăng nhập để xem đơn hàng' });
+    }
+    
+    const orders = await orderModel.getOrdersByUserId(userId);
+    res.json({ success: true, orders });
+  } catch (error) {
+    console.error('Lỗi khi lấy danh sách đơn hàng:', error);
+    res.status(500).json({ success: false, message: 'Có lỗi xảy ra' });
+  }
 });
 
 // API tìm kiếm sản phẩm

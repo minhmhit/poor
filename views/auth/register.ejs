@@ -7,7 +7,7 @@
                 <div class="card-body p-5">
                     <h1 class="text-center mb-4">Đăng ký tài khoản</h1>
                     
-                    <% if (typeof error !== 'undefined') { %>
+                    <% if (error) { %>
                         <div class="alert alert-danger">
                             <%= error %>
                         </div>

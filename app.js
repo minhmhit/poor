@@ -2,6 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const path = require('path');
 const session = require('express-session');
+const flash = require('connect-flash');
 require('dotenv').config();
 
 // Khởi tạo ứng dụng Express
@@ -16,10 +17,11 @@ testConnection();
 const indexRoutes = require('./routes/index');
 const productRoutes = require('./routes/products');
 const apiRoutes = require('./routes/api');
-const authRoutes = require('./routes/auth');
+const { router: authRoutes, isLoggedIn } = require('./routes/auth');
 const cartRoutes = require('./routes/cart');
 const adminRoutes = require('./routes/admin');
 const searchRoutes = require('./routes/search');
+const userRoutes = require('./routes/user');
 
 // Thiết lập middleware
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -33,6 +35,9 @@ app.use(session({
   saveUninitialized: true,
   cookie: { maxAge: 1000 * 60 * 60 * 24 } // 1 day
 }));
+
+// Sử dụng flash messages
+app.use(flash());
 
 // Middleware để thêm user và cart vào res.locals
 app.use((req, res, next) => {
@@ -53,6 +58,7 @@ app.use('/auth', authRoutes);
 app.use('/cart', cartRoutes);
 app.use('/admin', adminRoutes);
 app.use('/search', searchRoutes);
+app.use('/user', userRoutes);
 
 // Xử lý route product/:id (chuyển hướng đến /products/:id)
 app.get('/product/:id', (req, res) => {

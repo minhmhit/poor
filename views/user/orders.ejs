@@ -1,0 +1,67 @@
+<%- include('../partials/header') %>
+
+<div class="container py-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/">Trang chủ</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Đơn hàng của tôi</li>
+        </ol>
+    </nav>
+
+    <h1 class="mb-4">Đơn hàng của tôi</h1>
+
+    <% if (orders.length === 0) { %>
+        <div class="alert alert-info">
+            Bạn chưa có đơn hàng nào. <a href="/products">Mua sắm ngay</a>.
+        </div>
+    <% } else { %>
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Mã đơn hàng</th>
+                        <th>Ngày đặt</th>
+                        <th>Tổng tiền</th>
+                        <th>Trạng thái</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% orders.forEach(order => { %>
+                        <tr>
+                            <td>#<%= order.id %></td>
+                            <td><%= new Date(order.created_at).toLocaleDateString('vi-VN') %></td>
+                            <td><%= order.total_amount.toLocaleString('vi-VN') %> ₫</td>
+                            <td>
+                                <% if (order.status === 'pending') { %>
+                                    <span class="badge bg-warning text-dark">Chờ xác nhận</span>
+                                <% } else if (order.status === 'processing') { %>
+                                    <span class="badge bg-info">Đang xử lý</span>
+                                <% } else if (order.status === 'shipping') { %>
+                                    <span class="badge bg-primary">Đang giao hàng</span>
+                                <% } else if (order.status === 'completed') { %>
+                                    <span class="badge bg-success">Đã giao hàng</span>
+                                <% } else if (order.status === 'cancelled') { %>
+                                    <span class="badge bg-danger">Đã hủy</span>
+                                <% } %>
+                            </td>
+                            <td>
+                                <a href="/user/orders/<%= order.id %>" class="btn btn-sm btn-outline-primary">
+                                    Xem chi tiết
+                                </a>
+                            </td>
+                        </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        </div>
+    <% } %>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Nếu cần thêm JavaScript trong tương lai
+});
+</script>
+
+<%- include('../partials/footer') %> 

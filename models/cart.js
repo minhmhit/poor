@@ -1,5 +1,6 @@
 const { pool } = require('./db');
 const productModel = require('./products');
+const orderModel = require('./orders');
 
 class Cart {
   constructor(oldCart) {
@@ -86,44 +87,26 @@ class Cart {
 // Lưu giỏ hàng vào database khi đặt hàng
 const saveCartToOrder = async (cart, userId, orderInfo) => {
   try {
-    const connection = await pool.getConnection();
+    // Chuẩn bị dữ liệu đơn hàng
+    const orderData = {
+      userId: userId,
+      totalAmount: cart.totalPrice,
+      address: orderInfo.address,
+      phone: orderInfo.phone,
+      name: orderInfo.name,
+      email: orderInfo.email,
+      paymentMethod: orderInfo.payment || 'cod',
+      note: orderInfo.note,
+      items: cart.generateArray().map(item => ({
+        id: item.id,
+        quantity: item.qty,
+        price: item.item.price
+      }))
+    };
     
-    try {
-      await connection.beginTransaction();
-      
-      // Lưu thông tin đơn hàng
-      const [orderResult] = await connection.query(
-        `INSERT INTO orders (user_id, total_amount, shipping_address, contact_phone, status)
-         VALUES (?, ?, ?, ?, 'pending')`,
-        [userId, cart.totalPrice, orderInfo.address, orderInfo.phone]
-      );
-      
-      const orderId = orderResult.insertId;
-      
-      // Lưu chi tiết đơn hàng
-      const cartItems = cart.generateArray();
-      for (const item of cartItems) {
-        await connection.query(
-          `INSERT INTO order_items (order_id, product_id, quantity, price)
-           VALUES (?, ?, ?, ?)`,
-          [orderId, item.id, item.qty, item.item.price]
-        );
-        
-        // Cập nhật số lượng sản phẩm
-        await connection.query(
-          `UPDATE products SET stock = stock - ? WHERE id = ?`,
-          [item.qty, item.id]
-        );
-      }
-      
-      await connection.commit();
-      return orderId;
-    } catch (error) {
-      await connection.rollback();
-      throw error;
-    } finally {
-      connection.release();
-    }
+    // Sử dụng orderModel để tạo đơn hàng
+    const orderId = await orderModel.createOrder(orderData);
+    return orderId;
   } catch (error) {
     console.error('Lỗi khi lưu giỏ hàng vào đơn hàng:', error);
     throw error;
