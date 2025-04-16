@@ -1,0 +1,149 @@
+<%- include('partials/header') %>
+
+<div class="container py-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/">Trang chủ</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Liên hệ</li>
+        </ol>
+    </nav>
+
+    <h1 class="mb-4">Liên hệ với chúng tôi</h1>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Gửi tin nhắn cho chúng tôi</h5>
+                    
+                    <form id="contact-form">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="name" class="form-label">Họ tên</label>
+                                <input type="text" class="form-control" id="name" name="name" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="email" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="email" name="email" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="phone" class="form-label">Số điện thoại</label>
+                            <input type="tel" class="form-control" id="phone" name="phone">
+                        </div>
+                        <div class="mb-3">
+                            <label for="subject" class="form-label">Tiêu đề</label>
+                            <input type="text" class="form-control" id="subject" name="subject" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="message" class="form-label">Nội dung</label>
+                            <textarea class="form-control" id="message" name="message" rows="5" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Gửi tin nhắn</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Thông tin liên hệ</h5>
+                    
+                    <ul class="list-unstyled">
+                        <li class="mb-3">
+                            <i class="fas fa-map-marker-alt me-2 text-primary"></i> 123 Đường Nguyễn Văn Linh, Quận 7, TP. HCM
+                        </li>
+                        <li class="mb-3">
+                            <i class="fas fa-phone me-2 text-primary"></i> (028) 1234 5678
+                        </li>
+                        <li class="mb-3">
+                            <i class="fas fa-envelope me-2 text-primary"></i> info@coffeehouse.com
+                        </li>
+                        <li class="mb-3">
+                            <i class="fas fa-clock me-2 text-primary"></i> 8:00 - 17:00, Thứ 2 - Thứ 7
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Kết nối với chúng tôi</h5>
+                    
+                    <div class="d-flex mb-3">
+                        <a href="#" class="me-3 fs-4 text-primary"><i class="fab fa-facebook"></i></a>
+                        <a href="#" class="me-3 fs-4 text-danger"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="me-3 fs-4 text-danger"><i class="fab fa-youtube"></i></a>
+                        <a href="#" class="fs-4 text-dark"><i class="fab fa-tiktok"></i></a>
+                    </div>
+                    
+                    <p>Theo dõi chúng tôi trên mạng xã hội để nhận được những thông tin mới nhất về sản phẩm, khuyến mãi và các sự kiện đặc biệt.</p>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Giờ mở cửa</h5>
+                    
+                    <ul class="list-unstyled">
+                        <li class="d-flex justify-content-between mb-2">
+                            <span>Thứ 2 - Thứ 6:</span>
+                            <span class="fw-bold">8:00 - 17:00</span>
+                        </li>
+                        <li class="d-flex justify-content-between mb-2">
+                            <span>Thứ 7:</span>
+                            <span class="fw-bold">8:00 - 12:00</span>
+                        </li>
+                        <li class="d-flex justify-content-between">
+                            <span>Chủ nhật:</span>
+                            <span class="fw-bold">Đóng cửa</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body p-0">
+                    <h5 class="card-title p-3 mb-0">Bản đồ</h5>
+                    <div class="ratio ratio-16x9">
+                        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3920.0115817863283!2d106.77459631474945!3d10.870559092248252!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3174d8a1568c0de1%3A0xe6cee79680a89658!2zTmd1eeG7hW4gVsSDbiBMaW5oLCBUaMOgbmggcGjhu5EgVGjhu6cgxJDhu6ljLCBCw6xuaCBExrDGoW5nLCBWaeG7h3QgTmFt!5e0!3m2!1svi!2s!4v1649406397205!5m2!1svi!2s" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const contactForm = document.getElementById('contact-form');
+    
+    contactForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Lấy dữ liệu từ form
+        const name = document.getElementById('name').value;
+        const email = document.getElementById('email').value;
+        const phone = document.getElementById('phone').value;
+        const subject = document.getElementById('subject').value;
+        const message = document.getElementById('message').value;
+        
+        // Kiểm tra dữ liệu
+        if (!name || !email || !subject || !message) {
+            alert('Vui lòng điền đầy đủ thông tin bắt buộc!');
+            return;
+        }
+        
+        // Hiển thị thông báo thành công (trong thực tế sẽ gửi AJAX request đến server)
+        alert('Cảm ơn bạn đã liên hệ với chúng tôi! Chúng tôi sẽ phản hồi sớm nhất có thể.');
+        contactForm.reset();
+    });
+});
+</script>
+
+<%- include('partials/footer') %>

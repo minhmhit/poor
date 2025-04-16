@@ -1,0 +1,198 @@
+<%- include('partials/header') %>
+
+<div class="container py-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/">Trang chủ</a></li>
+            <li class="breadcrumb-item"><a href="/cart">Giỏ hàng</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Thanh toán</li>
+        </ol>
+    </nav>
+
+    <h1 class="mb-4">Thanh toán</h1>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="card-title mb-0">Thông tin giao hàng</h5>
+                </div>
+                <div class="card-body">
+                    <form id="checkout-form">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="name" class="form-label">Họ tên</label>
+                                <input type="text" class="form-control" id="name" name="name" value="<%= user ? user.name : '' %>" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="email" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="email" name="email" value="<%= user ? user.email : '' %>" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="phone" class="form-label">Số điện thoại</label>
+                            <input type="tel" class="form-control" id="phone" name="phone" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="address" class="form-label">Địa chỉ giao hàng</label>
+                            <textarea class="form-control" id="address" name="address" rows="3" required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="note" class="form-label">Ghi chú (không bắt buộc)</label>
+                            <textarea class="form-control" id="note" name="note" rows="2"></textarea>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="card-title mb-0">Phương thức thanh toán</h5>
+                </div>
+                <div class="card-body">
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="radio" name="payment" id="payment1" value="cod" checked>
+                        <label class="form-check-label" for="payment1">
+                            <i class="fas fa-money-bill-wave me-2"></i> Thanh toán khi nhận hàng (COD)
+                        </label>
+                    </div>
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="radio" name="payment" id="payment2" value="bank">
+                        <label class="form-check-label" for="payment2">
+                            <i class="fas fa-university me-2"></i> Chuyển khoản ngân hàng
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="payment" id="payment3" value="momo">
+                        <label class="form-check-label" for="payment3">
+                            <i class="fas fa-wallet me-2"></i> Ví điện tử MoMo
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="card-title mb-0">Thông tin đơn hàng</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        <% cart.items.forEach(item => { %>
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                <div class="d-flex align-items-center">
+                                    <div class="me-2">
+                                        <span class="badge bg-secondary rounded-pill"><%= item.qty %></span>
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-0"><%= item.item.name %></h6>
+                                        <small class="text-muted"><%= item.item.price.toLocaleString('vi-VN') %> ₫</small>
+                                    </div>
+                                </div>
+                                <span class="fw-bold"><%= item.price.toLocaleString('vi-VN') %> ₫</span>
+                            </div>
+                        <% }) %>
+                    </div>
+                </div>
+                <div class="card-footer bg-white">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Tạm tính:</span>
+                        <span><%= cart.totalPrice.toLocaleString('vi-VN') %> ₫</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Phí vận chuyển:</span>
+                        <span>30.000 ₫</span>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between fw-bold mb-3">
+                        <span>Tổng cộng:</span>
+                        <span class="text-danger"><%= (cart.totalPrice + 30000).toLocaleString('vi-VN') %> ₫</span>
+                    </div>
+                    <div class="d-grid">
+                        <button type="button" id="order-btn" class="btn btn-primary">Đặt hàng</button>
+                    </div>
+                    <div class="text-center mt-3">
+                        <a href="/cart" class="text-decoration-none">
+                            <i class="fas fa-arrow-left me-1"></i> Quay lại giỏ hàng
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Xử lý nút đặt hàng
+    document.getElementById('order-btn').addEventListener('click', function() {
+        // Lấy dữ liệu từ form
+        const form = document.getElementById('checkout-form');
+        const name = form.querySelector('#name').value;
+        const email = form.querySelector('#email').value;
+        const phone = form.querySelector('#phone').value;
+        const address = form.querySelector('#address').value;
+        const note = form.querySelector('#note').value;
+        const payment = document.querySelector('input[name="payment"]:checked').value;
+        
+        // Kiểm tra dữ liệu
+        if (!name || !email || !phone || !address) {
+            showToast('Vui lòng điền đầy đủ thông tin giao hàng', 'danger');
+            return;
+        }
+        
+        // Hiển thị loading
+        const orderBtn = document.getElementById('order-btn');
+        const originalText = orderBtn.innerHTML;
+        orderBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
+        orderBtn.disabled = true;
+        
+        // Gửi dữ liệu đặt hàng
+        fetch('/api/order', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                name,
+                email,
+                address,
+                phone,
+                note,
+                payment
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Chuyển hướng đến trang đặt hàng thành công
+                window.location.href = '/cart/success?orderId=' + data.orderId;
+            } else {
+                // Hiển thị lỗi
+                showToast(data.message || 'Có lỗi xảy ra khi đặt hàng', 'danger');
+                orderBtn.innerHTML = originalText;
+                orderBtn.disabled = false;
+            }
+        })
+        .catch(error => {
+            console.error('Lỗi khi đặt hàng:', error);
+            showToast('Có lỗi xảy ra khi đặt hàng', 'danger');
+            orderBtn.innerHTML = originalText;
+            orderBtn.disabled = false;
+        });
+    });
+    
+    // Hàm hiển thị thông báo
+    function showToast(message, type = 'info') {
+        // Sử dụng hàm showToast từ main.js
+        if (typeof window.showToast === 'function') {
+            window.showToast(message, type);
+        } else {
+            alert(message);
+        }
+    }
+});
+</script>
+
+<%- include('partials/footer') %> 
