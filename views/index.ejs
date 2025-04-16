@@ -1,0 +1,153 @@
+<%- include('partials/header') %>
+
+<!-- Banner -->
+<div id="carouselExampleIndicators" class="carousel slide mb-4" data-bs-ride="carousel">
+    <div class="carousel-indicators">
+        <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="0" class="active"></button>
+        <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="1"></button>
+        <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="2"></button>
+    </div>
+    <div class="carousel-inner rounded">
+        <div class="carousel-item active" style="height: 400px;">
+            <div class="d-flex align-items-center justify-content-center h-100 bg-dark">
+                <div class="text-white text-center px-4">
+                    <h2>Trải Nghiệm Hương Vị Cà Phê Thượng Hạng</h2>
+                    <p class="mb-4">Từ những vùng nguyên liệu nổi tiếng nhất Việt Nam</p>
+                    <a href="/products" class="btn btn-outline-light">Khám phá ngay</a>
+                </div>
+            </div>
+        </div>
+        <div class="carousel-item" style="height: 400px;">
+            <div class="d-flex align-items-center justify-content-center h-100 bg-dark">
+                <div class="text-white text-center px-4">
+                    <h2>Arabica Đà Lạt</h2>
+                    <p class="mb-4">Hương vị đặc trưng từ cao nguyên 1650m</p>
+                    <a href="/products/category/1" class="btn btn-outline-light">Xem thêm</a>
+                </div>
+            </div>
+        </div>
+        <div class="carousel-item" style="height: 400px;">
+            <div class="d-flex align-items-center justify-content-center h-100 bg-dark">
+                <div class="text-white text-center px-4">
+                    <h2>Robusta Đắk Lắk</h2>
+                    <p class="mb-4">Đậm đà, mạnh mẽ từ vùng đất đỏ bazan</p>
+                    <a href="/products/category/2" class="btn btn-outline-light">Xem thêm</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Previous</span>
+    </button>
+    <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="next">
+        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Next</span>
+    </button>
+</div>
+
+<!-- Danh mục sản phẩm -->
+<section class="mb-5">
+    <h2 class="text-center mb-4">Danh Mục Sản Phẩm</h2>
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="bg-dark text-white text-center py-5">
+                    <i class="fas fa-seedling fa-3x mb-3"></i>
+                    <h3>Cà Phê Arabica</h3>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">Hương vị tinh tế, chua thanh, thơm nhẹ với nhiều tầng hương khác nhau.</p>
+                    <a href="/products/category/1" class="btn btn-outline-dark w-100">Xem sản phẩm</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="bg-dark text-white text-center py-5">
+                    <i class="fas fa-coffee fa-3x mb-3"></i>
+                    <h3>Cà Phê Robusta</h3>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">Hương vị đậm đà, đắng mạnh, thích hợp cho pha phin truyền thống kiểu Việt Nam.</p>
+                    <a href="/products/category/2" class="btn btn-outline-dark w-100">Xem sản phẩm</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="bg-dark text-white text-center py-5">
+                    <i class="fas fa-mortar-pestle fa-3x mb-3"></i>
+                    <h3>Cà Phê Blend</h3>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">Sự kết hợp tinh tế giữa nhiều loại hạt cà phê, tạo nên hương vị độc đáo riêng.</p>
+                    <a href="/products/category/3" class="btn btn-outline-dark w-100">Xem sản phẩm</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Sản phẩm nổi bật -->
+<section class="mb-5">
+    <h2 class="text-center mb-4">Sản Phẩm Nổi Bật</h2>
+    <div class="row">
+        <% products.slice(0, 4).forEach(product => { %>
+            <div class="col-md-3 mb-4">
+                <div class="card h-100">
+                    <div class="bg-light" style="height: 200px;">
+                        <% if (product.image_url) { %>
+                            <img src="<%= product.image_url %>" class="card-img-top h-100 object-fit-cover" alt="<%= product.name %>">
+                        <% } else { %>
+                            <div class="d-flex align-items-center justify-content-center h-100 bg-secondary text-white">
+                                <i class="fas fa-coffee fa-3x"></i>
+                            </div>
+                        <% } %>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title"><%= product.name %></h5>
+                        <p class="card-text small text-muted"><%= product.category_name %></p>
+                        <p class="card-text text-truncate"><%= product.description %></p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="fw-bold text-danger"><%= product.price.toLocaleString('vi-VN') %> ₫</span>
+                            <button class="btn btn-sm btn-outline-primary add-to-cart" data-id="<%= product.id %>">
+                                <i class="fas fa-cart-plus"></i> Thêm vào giỏ
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        <% }) %>
+    </div>
+    <div class="text-center mt-4">
+        <a href="/products" class="btn btn-dark">Xem tất cả sản phẩm</a>
+    </div>
+</section>
+
+<!-- Giới thiệu -->
+<section class="mb-5">
+    <div class="row align-items-center">
+        <div class="col-md-6">
+            <h2>Về Coffee House</h2>
+            <p>Coffee House tự hào là nhà cung cấp cà phê bột chất lượng cao với các sản phẩm được tuyển chọn kỹ lưỡng từ các vùng trồng nổi tiếng của Việt Nam.</p>
+            <p>Chúng tôi cam kết mang đến cho khách hàng những hạt cà phê tươi ngon nhất, được rang xay theo công nghệ hiện đại, giữ trọn hương vị đặc trưng của từng loại hạt.</p>
+            <p>Với hơn 10 năm kinh nghiệm trong ngành cà phê, Coffee House đã và đang phục vụ hàng ngàn khách hàng trên toàn quốc, từ các quán cà phê, nhà hàng đến các gia đình yêu thích cà phê.</p>
+            <a href="/about" class="btn btn-outline-dark">Tìm hiểu thêm</a>
+        </div>
+        <div class="col-md-6">
+            <div class="bg-dark text-white p-5 rounded">
+                <h3 class="mb-4">Đặc điểm nổi bật</h3>
+                <ul class="list-unstyled">
+                    <li class="mb-3"><i class="fas fa-check-circle me-2"></i> 100% hạt cà phê chọn lọc</li>
+                    <li class="mb-3"><i class="fas fa-check-circle me-2"></i> Rang xay theo công nghệ hiện đại</li>
+                    <li class="mb-3"><i class="fas fa-check-circle me-2"></i> Đóng gói trong môi trường sạch</li>
+                    <li class="mb-3"><i class="fas fa-check-circle me-2"></i> Bảo quản trong điều kiện lý tưởng</li>
+                    <li><i class="fas fa-check-circle me-2"></i> Giao hàng nhanh chóng toàn quốc</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<%- include('partials/footer') %> 

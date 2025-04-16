@@ -1,0 +1,135 @@
+/* Kiểu dáng chung */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #333;
+    background-color: #f8f9fa;
+}
+
+a {
+    color: #6c757d;
+    text-decoration: none;
+}
+
+a:hover {
+    color: #212529;
+}
+
+/* Header & Navigation */
+.navbar-brand {
+    font-weight: 700;
+    font-size: 1.5rem;
+}
+
+.navbar {
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Sản phẩm */
+.card {
+    transition: transform 0.3s, box-shadow 0.3s;
+    margin-bottom: 1.5rem;
+    border: none;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.card-img-top {
+    object-fit: cover;
+}
+
+.card-title {
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+/* Trang chi tiết sản phẩm */
+.product-detail-img {
+    max-height: 500px;
+    object-fit: contain;
+}
+
+/* Giỏ hàng */
+.cart-item {
+    border-bottom: 1px solid #eee;
+    padding: 15px 0;
+}
+
+.cart-img {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+}
+
+.cart-quantity {
+    width: 60px;
+}
+
+/* Footer */
+footer {
+    margin-top: 50px;
+}
+
+footer a:hover {
+    color: #f8f9fa !important;
+    text-decoration: underline;
+}
+
+/* Form và input */
+.form-control:focus {
+    box-shadow: 0 0 0 0.2rem rgba(108, 117, 125, 0.25);
+    border-color: #6c757d;
+}
+
+.btn-primary {
+    background-color: #343a40;
+    border-color: #343a40;
+}
+
+.btn-primary:hover, .btn-primary:focus {
+    background-color: #23272b;
+    border-color: #1d2124;
+}
+
+.btn-outline-primary {
+    color: #343a40;
+    border-color: #343a40;
+}
+
+.btn-outline-primary:hover {
+    background-color: #343a40;
+    border-color: #343a40;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .carousel-item {
+        height: 300px !important;
+    }
+    
+    .card-img-top {
+        height: 150px !important;
+    }
+}
+
+/* Animation */
+.fade-in {
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* Các tiện ích */
+.object-fit-cover {
+    object-fit: cover;
+}
+
+.badge {
+    font-weight: 500;
+} 

@@ -1,0 +1,198 @@
+<%- include('partials/header') %>
+
+<div class="container py-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/">Trang chủ</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Giỏ hàng</li>
+        </ol>
+    </nav>
+
+    <h1 class="mb-4">Giỏ hàng của bạn</h1>
+
+    <% if (cart.totalQty === 0) { %>
+        <div id="cart-empty" class="text-center py-5">
+            <div class="mb-4">
+                <i class="fas fa-shopping-cart fa-5x text-muted"></i>
+            </div>
+            <h3 class="mb-3">Giỏ hàng của bạn đang trống</h3>
+            <p class="mb-4">Hãy thêm sản phẩm vào giỏ hàng để tiếp tục mua sắm</p>
+            <a href="/products" class="btn btn-dark">Tiếp tục mua sắm</a>
+        </div>
+    <% } else { %>
+        <div id="cart-items" class="mb-4">
+            <div class="card">
+                <div class="card-header bg-white">
+                    <div class="row fw-bold">
+                        <div class="col-md-6">Sản phẩm</div>
+                        <div class="col-md-2 text-center">Giá</div>
+                        <div class="col-md-2 text-center">Số lượng</div>
+                        <div class="col-md-2 text-center">Tổng</div>
+                    </div>
+                </div>
+                <div class="card-body p-0" id="cart-items-container">
+                    <% cart.items.forEach(item => { %>
+                        <div class="cart-item p-3 border-bottom" data-id="<%= item.id %>">
+                            <div class="row align-items-center">
+                                <div class="col-md-6">
+                                    <div class="d-flex align-items-center">
+                                        <div class="me-3">
+                                            <% if (item.item.image_url) { %>
+                                                <img src="<%= item.item.image_url %>" class="cart-img rounded" alt="<%= item.item.name %>">
+                                            <% } else { %>
+                                                <div class="cart-img rounded bg-secondary text-white d-flex align-items-center justify-content-center">
+                                                    <i class="fas fa-coffee"></i>
+                                                </div>
+                                            <% } %>
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-1"><%= item.item.name %></h6>
+                                            <small class="text-muted"><%= item.item.category_name %></small>
+                                            <button class="btn btn-sm text-danger remove-item" data-id="<%= item.id %>">
+                                                <i class="fas fa-trash-alt"></i> Xóa
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-2 text-center">
+                                    <%= item.item.price.toLocaleString('vi-VN') %> ₫
+                                </div>
+                                <div class="col-md-2 text-center">
+                                    <div class="input-group input-group-sm mx-auto" style="width: 100px;">
+                                        <button class="btn btn-outline-secondary decrease-qty" type="button" data-id="<%= item.id %>">-</button>
+                                        <input type="number" class="form-control text-center cart-quantity" value="<%= item.qty %>" min="1" max="<%= item.item.stock %>" data-id="<%= item.id %>">
+                                        <button class="btn btn-outline-secondary increase-qty" type="button" data-id="<%= item.id %>">+</button>
+                                    </div>
+                                </div>
+                                <div class="col-md-2 text-center fw-bold item-total">
+                                    <%= item.price.toLocaleString('vi-VN') %> ₫
+                                </div>
+                            </div>
+                        </div>
+                    <% }) %>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Ghi chú đơn hàng</h5>
+                        <textarea class="form-control" rows="3" placeholder="Nhập ghi chú cho đơn hàng (nếu có)"></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Tổng giỏ hàng</h5>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Tạm tính:</span>
+                            <span id="subtotal"><%= cart.totalPrice.toLocaleString('vi-VN') %> ₫</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Phí vận chuyển:</span>
+                            <span id="shipping">30.000 ₫</span>
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between fw-bold mb-3">
+                            <span>Tổng cộng:</span>
+                            <span id="total" class="text-danger"><%= (cart.totalPrice + 30000).toLocaleString('vi-VN') %> ₫</span>
+                        </div>
+                        <div class="d-grid gap-2">
+                            <a href="/cart/checkout" class="btn btn-primary" id="checkout-btn">Tiến hành thanh toán</a>
+                            <a href="/products" class="btn btn-outline-dark">Tiếp tục mua sắm</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    <% } %>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Xử lý sự kiện xóa item
+    document.querySelectorAll('.remove-item').forEach(button => {
+        button.addEventListener('click', function() {
+            const productId = this.getAttribute('data-id');
+            removeCartItem(productId);
+        });
+    });
+    
+    // Xử lý sự kiện thay đổi số lượng
+    document.querySelectorAll('.decrease-qty').forEach(button => {
+        button.addEventListener('click', function() {
+            const productId = this.getAttribute('data-id');
+            const input = document.querySelector(`.cart-quantity[data-id="${productId}"]`);
+            let currentValue = parseInt(input.value);
+            if (currentValue > 1) {
+                input.value = currentValue - 1;
+                updateCartItem(productId, currentValue - 1);
+            }
+        });
+    });
+    
+    document.querySelectorAll('.increase-qty').forEach(button => {
+        button.addEventListener('click', function() {
+            const productId = this.getAttribute('data-id');
+            const input = document.querySelector(`.cart-quantity[data-id="${productId}"]`);
+            let currentValue = parseInt(input.value);
+            updateCartItem(productId, currentValue + 1);
+        });
+    });
+    
+    document.querySelectorAll('.cart-quantity').forEach(input => {
+        input.addEventListener('change', function() {
+            const productId = this.getAttribute('data-id');
+            const quantity = parseInt(this.value);
+            if (quantity >= 1) {
+                updateCartItem(productId, quantity);
+            }
+        });
+    });
+    
+    // Hàm xóa sản phẩm khỏi giỏ hàng
+    function removeCartItem(productId) {
+        fetch('/api/cart/remove', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ productId })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.location.reload();
+            }
+        })
+        .catch(error => {
+            console.error('Lỗi khi xóa sản phẩm:', error);
+        });
+    }
+    
+    // Hàm cập nhật số lượng sản phẩm
+    function updateCartItem(productId, quantity) {
+        fetch('/api/cart/update', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ productId, quantity })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.location.reload();
+            }
+        })
+        .catch(error => {
+            console.error('Lỗi khi cập nhật số lượng:', error);
+        });
+    }
+});
+</script>
+
+<%- include('partials/footer') %> 

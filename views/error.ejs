@@ -1,0 +1,21 @@
+<%- include('partials/header') %>
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 text-center">
+            <div class="card border-0 shadow">
+                <div class="card-body p-5">
+                    <h1 class="display-4 mb-4 text-danger">
+                        <i class="fas fa-exclamation-triangle me-3"></i>Lỗi
+                    </h1>
+                    <p class="lead mb-4"><%= message %></p>
+                    <a href="/" class="btn btn-dark">
+                        <i class="fas fa-home me-2"></i>Quay về trang chủ
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('partials/footer') %> 
