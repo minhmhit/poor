@@ -13,11 +13,14 @@ const userModel = {
       const saltRounds = 10;
       const hashedPassword = await bcrypt.hash(userData.password, saltRounds);
       
+      // Thiết lập role mặc định là 'customer' nếu không được cung cấp
+      const userRole = userData.role || 'customer';
+      
       // Thêm người dùng vào bảng users
       const [userResult] = await connection.query(`
         INSERT INTO users (name, email, password, role)
-        VALUES (?, ?, ?, 'user')
-      `, [userData.name, userData.email, hashedPassword]);
+        VALUES (?, ?, ?, ?)
+      `, [userData.name, userData.email, hashedPassword, userRole]);
       
       const userId = userResult.insertId;
       

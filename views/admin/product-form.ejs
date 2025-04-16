@@ -64,9 +64,11 @@
                 <label for="category_id" class="form-label">Danh mục</label>
                 <select class="form-select" id="category_id" name="category_id" required>
                   <option value="" selected disabled>-- Chọn danh mục --</option>
-                  <option value="1" <%= product.category_id === 1 ? 'selected' : '' %>>Cà phê Arabica</option>
-                  <option value="2" <%= product.category_id === 2 ? 'selected' : '' %>>Cà phê Robusta</option>
-                  <option value="3" <%= product.category_id === 3 ? 'selected' : '' %>>Cà phê Blend</option>
+                  <% if (categories && categories.length > 0) { %>
+                    <% categories.forEach(category => { %>
+                      <option value="<%= category.category_id %>" <%= product.category_id === category.category_id ? 'selected' : '' %>><%= category.category_name %></option>
+                    <% }); %>
+                  <% } %>
                 </select>
               </div>
             </div>

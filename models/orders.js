@@ -20,47 +20,30 @@ const orderModel = {
   // Lấy đơn hàng theo ID
   getOrderById: async (id) => {
     try {
-      const [orderRows] = await pool.query(`
+      const [orders] = await pool.query(`
         SELECT o.*, u.name as user_name, u.email as user_email
         FROM orders o
         LEFT JOIN users u ON o.user_id = u.id
         WHERE o.id = ?
       `, [id]);
       
-      if (!orderRows.length) return null;
+      if (orders.length === 0) return null;
       
-      const order = orderRows[0];
+      const order = orders[0];
       
       // Lấy các sản phẩm trong đơn hàng
-      const [itemRows] = await pool.query(`
+      const [items] = await pool.query(`
         SELECT oi.*, p.name, p.image_url
         FROM order_items oi
-        LEFT JOIN products p ON oi.product_id = p.id
+        JOIN products p ON oi.product_id = p.id
         WHERE oi.order_id = ?
       `, [id]);
       
-      // Lấy lịch sử trạng thái đơn hàng
-      const [statusRows] = await pool.query(`
-        SELECT *
-        FROM order_status_history
-        WHERE order_id = ?
-        ORDER BY created_at DESC
-      `, [id]);
-      
-      // Lấy thông tin vận chuyển
-      const [shippingRows] = await pool.query(`
-        SELECT *
-        FROM shipping
-        WHERE order_id = ?
-      `, [id]);
-      
-      order.items = itemRows;
-      order.status_history = statusRows;
-      order.shipping = shippingRows.length ? shippingRows[0] : null;
+      order.items = items;
       
       return order;
     } catch (error) {
-      console.error(`Lỗi khi lấy đơn hàng có ID ${id}:`, error);
+      console.error(`Lỗi khi lấy thông tin đơn hàng ID ${id}:`, error);
       throw error;
     }
   },
@@ -142,30 +125,30 @@ const orderModel = {
   },
 
   // Cập nhật trạng thái đơn hàng
-  updateOrderStatus: async (orderId, status, note) => {
+  updateOrderStatus: async (id, status, note = null) => {
     const connection = await pool.getConnection();
     
     try {
       await connection.beginTransaction();
       
-      // Cập nhật trạng thái trong bảng orders
+      // Cập nhật trạng thái đơn hàng
       await connection.query(`
         UPDATE orders
-        SET status = ?
+        SET status = ?, updated_at = NOW()
         WHERE id = ?
-      `, [status, orderId]);
+      `, [status, id]);
       
       // Thêm vào lịch sử trạng thái
       await connection.query(`
         INSERT INTO order_status_history (order_id, status, note)
         VALUES (?, ?, ?)
-      `, [orderId, status, note || null]);
+      `, [id, status, note]);
       
       await connection.commit();
       return true;
     } catch (error) {
       await connection.rollback();
-      console.error(`Lỗi khi cập nhật trạng thái đơn hàng ${orderId}:`, error);
+      console.error(`Lỗi khi cập nhật trạng thái đơn hàng ID ${id}:`, error);
       throw error;
     } finally {
       connection.release();
@@ -233,6 +216,51 @@ const orderModel = {
       return rows;
     } catch (error) {
       console.error('Lỗi khi lấy thống kê đơn hàng:', error);
+      throw error;
+    }
+  },
+
+  // Lấy lịch sử trạng thái của đơn hàng
+  getOrderStatusHistory: async (orderId) => {
+    try {
+      const [rows] = await pool.query(`
+        SELECT * FROM order_status_history
+        WHERE order_id = ?
+        ORDER BY created_at DESC
+      `, [orderId]);
+      
+      return rows;
+    } catch (error) {
+      console.error(`Lỗi khi lấy lịch sử trạng thái đơn hàng ID ${orderId}:`, error);
+      throw error;
+    }
+  },
+  
+  // Đếm số đơn hàng theo trạng thái
+  countOrdersByStatus: async () => {
+    try {
+      const [rows] = await pool.query(`
+        SELECT status, COUNT(*) as count
+        FROM orders
+        GROUP BY status
+      `);
+      
+      const result = {
+        pending: 0,
+        processing: 0,
+        completed: 0,
+        cancelled: 0,
+        total: 0
+      };
+      
+      rows.forEach(row => {
+        result[row.status] = parseInt(row.count);
+        result.total += parseInt(row.count);
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('Lỗi khi đếm đơn hàng theo trạng thái:', error);
       throw error;
     }
   }
