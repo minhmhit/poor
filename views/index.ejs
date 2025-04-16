@@ -110,7 +110,7 @@
                         <p class="card-text small text-muted"><%= product.category_name %></p>
                         <p class="card-text text-truncate"><%= product.description %></p>
                         <div class="d-flex justify-content-between align-items-center">
-                            <span class="fw-bold text-danger"><%= product.price.toLocaleString('vi-VN') %> ₫</span>
+                            <span class="fw-bold text-danger"><%= parseInt(product.price).toLocaleString('vi-VN') %> ₫</span>
                             <button class="btn btn-sm btn-outline-primary add-to-cart" data-id="<%= product.id %>">
                                 <i class="fas fa-cart-plus"></i> Thêm vào giỏ
                             </button>

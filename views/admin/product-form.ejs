@@ -1,0 +1,115 @@
+<%- include('../partials/header') %>
+
+<div class="container-fluid">
+  <div class="row">
+    <!-- Sidebar -->
+    <div class="col-md-3 col-lg-2 d-md-block bg-light sidebar p-4">
+      <div class="position-sticky pt-3">
+        <h5 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mb-4 text-muted">
+          <span>Quản trị viên</span>
+        </h5>
+        <ul class="nav flex-column">
+          <li class="nav-item">
+            <a class="nav-link" href="/admin">
+              <i class="fas fa-tachometer-alt me-2"></i>
+              Dashboard
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active" href="/admin/products">
+              <i class="fas fa-box me-2"></i>
+              Sản phẩm
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/admin/categories">
+              <i class="fas fa-tags me-2"></i>
+              Danh mục
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/admin/orders">
+              <i class="fas fa-shopping-cart me-2"></i>
+              Đơn hàng
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/admin/users">
+              <i class="fas fa-users me-2"></i>
+              Người dùng
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Main content -->
+    <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+      <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2"><%= product.id ? 'Chỉnh sửa sản phẩm' : 'Thêm sản phẩm mới' %></h1>
+        <a href="/admin/products" class="btn btn-secondary">
+          <i class="fas fa-arrow-left me-1"></i> Quay lại
+        </a>
+      </div>
+
+      <div class="card">
+        <div class="card-body">
+          <form action="<%= product.id ? `/admin/products/edit/${product.id}` : '/admin/products/add' %>" method="POST" enctype="multipart/form-data">
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <label for="name" class="form-label">Tên sản phẩm</label>
+                <input type="text" class="form-control" id="name" name="name" value="<%= product.name || '' %>" required>
+              </div>
+              <div class="col-md-6">
+                <label for="category_id" class="form-label">Danh mục</label>
+                <select class="form-select" id="category_id" name="category_id" required>
+                  <option value="" selected disabled>-- Chọn danh mục --</option>
+                  <option value="1" <%= product.category_id === 1 ? 'selected' : '' %>>Cà phê Arabica</option>
+                  <option value="2" <%= product.category_id === 2 ? 'selected' : '' %>>Cà phê Robusta</option>
+                  <option value="3" <%= product.category_id === 3 ? 'selected' : '' %>>Cà phê Blend</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <label for="price" class="form-label">Giá (VNĐ)</label>
+                <input type="number" class="form-control" id="price" name="price" value="<%= product.price || '' %>" min="0" required>
+              </div>
+              <div class="col-md-6">
+                <label for="stock" class="form-label">Số lượng trong kho</label>
+                <input type="number" class="form-control" id="stock" name="stock" value="<%= product.stock || 0 %>" min="0" required>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label for="description" class="form-label">Mô tả sản phẩm</label>
+              <textarea class="form-control" id="description" name="description" rows="5"><%= product.description || '' %></textarea>
+            </div>
+
+            <div class="mb-3">
+              <label for="image" class="form-label">Hình ảnh sản phẩm</label>
+              <% if (product.image_url) { %>
+                <div class="mb-2">
+                  <img src="<%= product.image_url %>" alt="<%= product.name %>" class="img-thumbnail" style="max-width: 200px;">
+                </div>
+              <% } %>
+              <input type="file" class="form-control" id="image" name="image" accept="image/*">
+              <% if (product.image_url) { %>
+                <div class="form-text">Để trống nếu không muốn thay đổi hình ảnh</div>
+              <% } %>
+            </div>
+
+            <div class="text-end">
+              <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save me-1"></i> <%= product.id ? 'Cập nhật' : 'Thêm mới' %>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<%- include('../partials/footer') %> 
