@@ -153,14 +153,14 @@
                         </div>
                       </div>
                     </td>
-                    <td><%= item.price.toLocaleString('vi-VN') %> ₫</td>
+                    <td><%= parseInt(item.price).toLocaleString('vi-VN') %> ₫</td>
                     <td><%= item.quantity %></td>
-                    <td><%= (item.price * item.quantity).toLocaleString('vi-VN') %> ₫</td>
+                    <td><%= (parseInt(item.price) * parseInt(item.quantity)).toLocaleString('vi-VN') %> ₫</td>
                   </tr>
                 <% }); %>
                 <tr class="table-secondary">
                   <td colspan="3" class="text-end fw-bold">Tổng cộng:</td>
-                  <td class="fw-bold"><%= order.total_amount.toLocaleString('vi-VN') %> ₫</td>
+                  <td class="fw-bold"><%= parseInt(order.total_amount).toLocaleString('vi-VN') %> ₫</td>
                 </tr>
               </tbody>
             </table>

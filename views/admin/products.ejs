@@ -76,7 +76,7 @@
                   </td>
                   <td><%= product.name %></td>
                   <td><%= product.category_id %></td>
-                  <td><%= product.price.toLocaleString('vi-VN') %> ₫</td>
+                  <td><%= parseInt(product.price).toLocaleString('vi-VN') %> ₫</td>
                   <td><%= product.stock %></td>
                   <td><%= new Date(product.created_at).toLocaleDateString('vi-VN') %></td>
                   <td>
@@ -103,5 +103,3 @@
     </main>
   </div>
 </div>
-
-<%- include('../partials/footer') %> 

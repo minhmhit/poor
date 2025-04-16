@@ -1,10 +1,38 @@
 const express = require('express');
 const router = express.Router();
+const multer = require('multer');
+const path = require('path');
 const productModel = require('../models/products');
 const categoryModel = require('../models/categories');
 const orderModel = require('../models/orders');
 const adminModel = require('../models/admin');
 const { isLoggedIn } = require('./auth');
+
+// Cấu hình multer để lưu trữ file uploads
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'public/images/products/');
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    const ext = path.extname(file.originalname);
+    cb(null, 'product-' + uniqueSuffix + ext);
+  }
+});
+
+const upload = multer({ 
+  storage: storage,
+  fileFilter: function (req, file, cb) {
+    const filetypes = /jpeg|jpg|png|gif/;
+    const mimetype = filetypes.test(file.mimetype);
+    const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+    
+    if (mimetype && extname) {
+      return cb(null, true);
+    }
+    cb(new Error('Chỉ chấp nhận file hình ảnh có định dạng: ' + filetypes));
+  }
+});
 
 // Middleware kiểm tra quyền admin
 const isAdmin = (req, res, next) => {
@@ -83,7 +111,7 @@ router.get('/products/add', async (req, res) => {
 });
 
 // Quản lý sản phẩm - xử lý thêm mới
-router.post('/products/add', async (req, res) => {
+router.post('/products/add', upload.single('image'), async (req, res) => {
   try {
     const productData = req.body;
     
@@ -92,12 +120,15 @@ router.post('/products/add', async (req, res) => {
     productData.price = parseFloat(productData.price) || 0;
     productData.stock = parseInt(productData.stock) || 0;
     
-    // Thiết lập image_url nếu không có
-    if (!productData.image_url) {
+    // Xử lý hình ảnh
+    if (req.file) {
+      productData.image_url = '/images/products/' + req.file.filename;
+    } else {
       productData.image_url = '/images/default-product.jpg';
     }
     
     await productModel.addProduct(productData);
+    req.flash('success', 'Thêm sản phẩm thành công');
     res.redirect('/admin/products');
   } catch (error) {
     console.error('Lỗi khi thêm sản phẩm:', error);
@@ -138,7 +169,7 @@ router.get('/products/edit/:id', async (req, res) => {
 });
 
 // Quản lý sản phẩm - xử lý chỉnh sửa
-router.post('/products/edit/:id', async (req, res) => {
+router.post('/products/edit/:id', upload.single('image'), async (req, res) => {
   try {
     const productId = req.params.id;
     const productData = req.body;
@@ -148,13 +179,17 @@ router.post('/products/edit/:id', async (req, res) => {
     productData.price = parseFloat(productData.price) || 0;
     productData.stock = parseInt(productData.stock) || 0;
     
-    // Giữ nguyên image_url cũ nếu không có
-    if (!productData.image_url) {
+    // Xử lý hình ảnh
+    if (req.file) {
+      productData.image_url = '/images/products/' + req.file.filename;
+    } else {
+      // Giữ nguyên image_url cũ nếu không có
       const existingProduct = await productModel.getProductById(productId);
       productData.image_url = existingProduct.image_url;
     }
     
     await productModel.updateProduct(productId, productData);
+    req.flash('success', 'Cập nhật sản phẩm thành công');
     res.redirect('/admin/products');
   } catch (error) {
     console.error('Lỗi khi cập nhật sản phẩm:', error);
@@ -170,6 +205,7 @@ router.get('/products/delete/:id', async (req, res) => {
   try {
     const productId = req.params.id;
     await productModel.deleteProduct(productId);
+    req.flash('success', 'Xóa sản phẩm thành công');
     res.redirect('/admin/products');
   } catch (error) {
     console.error('Lỗi khi xóa sản phẩm:', error);
