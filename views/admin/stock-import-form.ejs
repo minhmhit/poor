@@ -1,0 +1,310 @@
+<%- include('../partials/admin-header') %>
+<div class="container-fluid">
+  <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">
+      <% if (stockImport && stockImport.id) { %>
+        Chỉnh sửa phiếu nhập kho
+      <% } else { %>
+        Tạo phiếu nhập kho mới
+      <% } %>
+    </h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+      <div class="btn-group me-2">
+        <a href="/admin/stock/imports" class="btn btn-sm btn-outline-secondary">
+          <i class="fas fa-arrow-left"></i> Quay lại
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <% if (messages.error) { %>
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+      <%= messages.error %>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+  <% } %>
+
+  <form action="<%= stockImport && stockImport.id ? '/admin/stock/imports/' + stockImport.id + '/update' : '/admin/stock/imports/add' %>" method="POST" id="stockImportForm">
+    <div class="card mb-4">
+      <div class="card-header">
+        <i class="fas fa-info-circle"></i> Thông tin phiếu nhập
+      </div>
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-md-4">
+            <label for="import_code" class="form-label">Mã phiếu nhập</label>
+            <input type="text" class="form-control" id="import_code" name="import_code" value="<%= stockImport ? stockImport.import_code : import_code %>" readonly>
+            <small class="text-muted">Mã phiếu được tạo tự động</small>
+          </div>
+          <div class="col-md-4">
+            <label for="import_date" class="form-label">Ngày nhập <span class="text-danger">*</span></label>
+            <input type="date" class="form-control" id="import_date" name="import_date" value="<%= stockImport ? new Date(stockImport.import_date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0] %>" required>
+          </div>
+          <div class="col-md-4">
+            <label for="supplier_id" class="form-label">Nhà cung cấp <span class="text-danger">*</span></label>
+            <select class="form-select" id="supplier_id" name="supplier_id" required <%= stockImport && stockImport.id ? 'disabled' : '' %>>
+              <option value="">-- Chọn nhà cung cấp --</option>
+              <% suppliers.forEach(supplier => { %>
+                <option value="<%= supplier.id %>" <%= stockImport && stockImport.supplier_id == supplier.id ? 'selected' : '' %>>
+                  <%= supplier.name %> - <%= supplier.phone %>
+                </option>
+              <% }) %>
+            </select>
+            <% if (stockImport && stockImport.id) { %>
+              <input type="hidden" name="supplier_id" value="<%= stockImport.supplier_id %>">
+            <% } %>
+          </div>
+          <div class="col-md-12">
+            <label for="notes" class="form-label">Ghi chú</label>
+            <textarea class="form-control" id="notes" name="notes" rows="3"><%= stockImport ? stockImport.notes : '' %></textarea>
+          </div>
+          <div class="col-md-4">
+            <label for="payment_status" class="form-label">Trạng thái thanh toán</label>
+            <select class="form-select" id="payment_status" name="payment_status">
+              <option value="pending" <%= stockImport && stockImport.payment_status === 'pending' ? 'selected' : '' %>>Chưa thanh toán</option>
+              <option value="partial" <%= stockImport && stockImport.payment_status === 'partial' ? 'selected' : '' %>>Thanh toán một phần</option>
+              <option value="completed" <%= stockImport && stockImport.payment_status === 'completed' ? 'selected' : '' %>>Đã thanh toán</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label for="payment_amount" class="form-label">Số tiền đã thanh toán</label>
+            <input type="number" class="form-control" id="payment_amount" name="payment_amount" value="<%= stockImport ? stockImport.payment_amount : 0 %>" min="0" step="1000">
+          </div>
+          <div class="col-md-4">
+            <label for="payment_method" class="form-label">Phương thức thanh toán</label>
+            <select class="form-select" id="payment_method" name="payment_method">
+              <option value="cash" <%= stockImport && stockImport.payment_method === 'cash' ? 'selected' : '' %>>Tiền mặt</option>
+              <option value="transfer" <%= stockImport && stockImport.payment_method === 'transfer' ? 'selected' : '' %>>Chuyển khoản</option>
+              <option value="other" <%= stockImport && stockImport.payment_method === 'other' ? 'selected' : '' %>>Khác</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <% if (!stockImport || !stockImport.id) { %>
+      <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <div>
+            <i class="fas fa-list"></i> Danh sách sản phẩm nhập
+          </div>
+          <button type="button" class="btn btn-sm btn-primary" id="addProductBtn">
+            <i class="fas fa-plus"></i> Thêm sản phẩm
+          </button>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-bordered" id="productsTable">
+              <thead>
+                <tr>
+                  <th style="width: 30%">Sản phẩm</th>
+                  <th style="width: 15%">Số lượng</th>
+                  <th style="width: 20%">Giá nhập</th>
+                  <th style="width: 20%">Thành tiền</th>
+                  <th style="width: 15%">Thao tác</th>
+                </tr>
+              </thead>
+              <tbody id="productsTableBody">
+                <tr id="emptyRow">
+                  <td colspan="5" class="text-center">Chưa có sản phẩm nào được thêm</td>
+                </tr>
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td colspan="3" class="text-end fw-bold">Tổng cộng:</td>
+                  <td class="fw-bold" id="totalAmount">0 ₫</td>
+                  <td></td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+      </div>
+    <% } else { %>
+      <div class="card mb-4">
+        <div class="card-header">
+          <i class="fas fa-list"></i> Danh sách sản phẩm nhập
+          <span class="badge bg-info"><%= importItems.length %> sản phẩm</span>
+        </div>
+        <div class="card-body">
+          <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i> Bạn không thể chỉnh sửa các sản phẩm trong phiếu nhập đã tạo.
+          </div>
+          <div class="table-responsive">
+            <table class="table table-bordered">
+              <thead>
+                <tr>
+                  <th>Sản phẩm</th>
+                  <th>Số lượng</th>
+                  <th>Giá nhập</th>
+                  <th>Thành tiền</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% let total = 0; %>
+                <% importItems.forEach(item => { %>
+                  <tr>
+                    <td><%= item.product_name %></td>
+                    <td><%= item.quantity %></td>
+                    <td><%= new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(item.import_price) %></td>
+                    <td><%= new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(item.import_price * item.quantity) %></td>
+                  </tr>
+                  <% total += item.import_price * item.quantity; %>
+                <% }); %>
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td colspan="3" class="text-end fw-bold">Tổng cộng:</td>
+                  <td class="fw-bold"><%= new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(total) %></td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+      </div>
+    <% } %>
+
+    <div class="d-grid gap-2 d-md-flex justify-content-md-end mb-4">
+      <a href="/admin/stock/imports" class="btn btn-secondary me-md-2">
+        <i class="fas fa-times"></i> Hủy
+      </a>
+      <button type="submit" class="btn btn-primary">
+        <i class="fas fa-save"></i> <%= stockImport && stockImport.id ? 'Cập nhật' : 'Lưu phiếu nhập' %>
+      </button>
+    </div>
+  </form>
+
+  <% if (!stockImport || !stockImport.id) { %>
+    <!-- Template cho hàng sản phẩm mới -->
+    <template id="productRowTemplate">
+      <tr class="product-row">
+        <td>
+          <select class="form-select product-select" name="products[{index}][product_id]" required>
+            <option value="">-- Chọn sản phẩm --</option>
+            <% products.forEach(product => { %>
+              <option value="<%= product.id %>" data-price="<%= product.price %>"><%= product.name %></option>
+            <% }) %>
+          </select>
+        </td>
+        <td>
+          <input type="number" class="form-control product-quantity" name="products[{index}][quantity]" min="1" value="1" required>
+        </td>
+        <td>
+          <input type="number" class="form-control product-price" name="products[{index}][import_price]" min="0" step="1000" value="0" required>
+        </td>
+        <td>
+          <span class="product-total">0 ₫</span>
+        </td>
+        <td>
+          <button type="button" class="btn btn-sm btn-danger remove-product">
+            <i class="fas fa-trash"></i>
+          </button>
+        </td>
+      </tr>
+    </template>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        let productIndex = 0;
+        const productsTableBody = document.getElementById('productsTableBody');
+        const emptyRow = document.getElementById('emptyRow');
+        const totalAmountElement = document.getElementById('totalAmount');
+        const addProductBtn = document.getElementById('addProductBtn');
+        const productRowTemplate = document.getElementById('productRowTemplate');
+
+        // Thêm sản phẩm mới
+        addProductBtn.addEventListener('click', function() {
+          if (emptyRow && emptyRow.parentNode) {
+            emptyRow.parentNode.removeChild(emptyRow);
+          }
+
+          const template = productRowTemplate.content.cloneNode(true);
+          const newRow = template.querySelector('.product-row');
+          
+          // Thay thế index placeholder bằng index thực tế
+          const selects = newRow.querySelectorAll('select, input');
+          selects.forEach(element => {
+            if (element.name) {
+              element.name = element.name.replace('{index}', productIndex);
+            }
+          });
+
+          productsTableBody.appendChild(newRow);
+          productIndex++;
+          setupEventListeners();
+          calculateTotal();
+        });
+
+        // Thiết lập các event listener cho các sản phẩm
+        function setupEventListeners() {
+          // Xóa sản phẩm
+          document.querySelectorAll('.remove-product').forEach(button => {
+            button.addEventListener('click', function() {
+              const row = this.closest('.product-row');
+              row.parentNode.removeChild(row);
+              
+              if (productsTableBody.querySelectorAll('.product-row').length === 0) {
+                productsTableBody.appendChild(emptyRow);
+              }
+              
+              calculateTotal();
+            });
+          });
+
+          // Thay đổi sản phẩm
+          document.querySelectorAll('.product-select').forEach(select => {
+            select.addEventListener('change', function() {
+              const row = this.closest('.product-row');
+              const priceInput = row.querySelector('.product-price');
+              const selectedOption = this.options[this.selectedIndex];
+              
+              if (selectedOption.value) {
+                const defaultPrice = selectedOption.getAttribute('data-price');
+                priceInput.value = defaultPrice || 0;
+              } else {
+                priceInput.value = 0;
+              }
+              
+              updateRowTotal(row);
+              calculateTotal();
+            });
+          });
+
+          // Thay đổi số lượng hoặc giá
+          document.querySelectorAll('.product-quantity, .product-price').forEach(input => {
+            input.addEventListener('change', function() {
+              const row = this.closest('.product-row');
+              updateRowTotal(row);
+              calculateTotal();
+            });
+          });
+        }
+
+        // Cập nhật tổng tiền cho một hàng
+        function updateRowTotal(row) {
+          const quantity = parseInt(row.querySelector('.product-quantity').value) || 0;
+          const price = parseInt(row.querySelector('.product-price').value) || 0;
+          const total = quantity * price;
+          
+          row.querySelector('.product-total').textContent = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(total);
+        }
+
+        // Tính tổng tiền cho toàn bộ phiếu nhập
+        function calculateTotal() {
+          let total = 0;
+          document.querySelectorAll('.product-row').forEach(row => {
+            const quantity = parseInt(row.querySelector('.product-quantity').value) || 0;
+            const price = parseInt(row.querySelector('.product-price').value) || 0;
+            total += quantity * price;
+          });
+          
+          totalAmountElement.textContent = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(total);
+        }
+
+        // Thêm ít nhất một hàng sản phẩm khi trang được tải
+        addProductBtn.click();
+      });
+    </script>
+  <% } %>
+</div>
+<%- include('../partials/admin-footer') %>

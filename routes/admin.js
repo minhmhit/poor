@@ -6,6 +6,8 @@ const productModel = require('../models/products');
 const categoryModel = require('../models/categories');
 const orderModel = require('../models/orders');
 const adminModel = require('../models/admin');
+const supplierModel = require('../models/suppliers');
+const stockModel = require('../models/stock');
 const { isLoggedIn } = require('./auth');
 
 // Cấu hình multer để lưu trữ file uploads
@@ -900,6 +902,512 @@ router.get('/reports/sales/export', async (req, res) => {
   } catch (error) {
     console.error('Lỗi khi xuất báo cáo doanh thu:', error);
     res.status(500).json({ error: 'Không thể xuất báo cáo doanh thu' });
+  }
+});
+
+// ============== QUẢN LÝ NHÀ CUNG CẤP ==============
+// Danh sách nhà cung cấp
+router.get('/suppliers', async (req, res) => {
+  try {
+    // Lấy các tham số lọc từ query string
+    const filters = {
+      status: req.query.status || '',
+      q: req.query.q || ''
+    };
+    
+    // Lấy danh sách nhà cung cấp theo bộ lọc
+    const suppliers = await supplierModel.getFilteredSuppliers(filters);
+    
+    res.render('admin/suppliers', { 
+      title: 'Quản lý nhà cung cấp',
+      suppliers,
+      filters,
+      messages: req.flash()
+    });
+  } catch (error) {
+    console.error('Lỗi khi lấy danh sách nhà cung cấp:', error);
+    res.status(500).render('error', { 
+      title: 'Lỗi hệ thống',
+      message: 'Không thể tải danh sách nhà cung cấp' 
+    });
+  }
+});
+
+// Form thêm nhà cung cấp
+router.get('/suppliers/add', async (req, res) => {
+  try {
+    res.render('admin/supplier-form', { 
+      title: 'Thêm nhà cung cấp mới',
+      supplier: {},
+      mode: 'add'
+    });
+  } catch (error) {
+    console.error('Lỗi khi tạo form thêm nhà cung cấp:', error);
+    res.status(500).render('error', { 
+      title: 'Lỗi hệ thống',
+      message: 'Không thể tạo form thêm nhà cung cấp' 
+    });
+  }
+});
+
+// Xử lý thêm nhà cung cấp
+router.post('/suppliers/add', async (req, res) => {
+  try {
+    const supplierData = req.body;
+    
+    const supplierId = await supplierModel.addSupplier(supplierData);
+    
+    req.flash('success', 'Đã thêm nhà cung cấp mới thành công');
+    res.redirect('/admin/suppliers');
+  } catch (error) {
+    console.error('Lỗi khi thêm nhà cung cấp:', error);
+    res.status(500).render('error', { 
+      title: 'Lỗi hệ thống',
+      message: 'Không thể thêm nhà cung cấp mới' 
+    });
+  }
+});
+
+// Form chỉnh sửa nhà cung cấp
+router.get('/suppliers/edit/:id', async (req, res) => {
+  try {
+    const supplierId = req.params.id;
+    const supplier = await supplierModel.getSupplierById(supplierId);
+    
+    if (!supplier) {
+      return res.status(404).render('error', { 
+        title: 'Không tìm thấy',
+        message: 'Nhà cung cấp không tồn tại' 
+      });
+    }
+    
+    res.render('admin/supplier-form', { 
+      title: 'Chỉnh sửa nhà cung cấp',
+      supplier,
+      mode: 'edit'
+    });
+  } catch (error) {
+    console.error('Lỗi khi lấy thông tin nhà cung cấp:', error);
+    res.status(500).render('error', { 
+      title: 'Lỗi hệ thống',
+      message: 'Không thể tải thông tin nhà cung cấp' 
+    });
+  }
+});
+
+// Xử lý chỉnh sửa nhà cung cấp
+router.post('/suppliers/edit/:id', async (req, res) => {
+  try {
+    const supplierId = req.params.id;
+    const supplierData = req.body;
+    
+    await supplierModel.updateSupplier(supplierId, supplierData);
+    
+    req.flash('success', 'Đã cập nhật thông tin nhà cung cấp thành công');
+    res.redirect('/admin/suppliers');
+  } catch (error) {
+    console.error('Lỗi khi cập nhật nhà cung cấp:', error);
+    res.status(500).render('error', { 
+      title: 'Lỗi hệ thống',
+      message: 'Không thể cập nhật thông tin nhà cung cấp' 
+    });
+  }
+});
+
+// Xử lý xóa nhà cung cấp
+router.get('/suppliers/delete/:id', async (req, res) => {
+  try {
+    const supplierId = req.params.id;
+    
+    await supplierModel.deleteSupplier(supplierId);
+    
+    req.flash('success', 'Đã xóa nhà cung cấp thành công');
+    res.redirect('/admin/suppliers');
+  } catch (error) {
+    console.error('Lỗi khi xóa nhà cung cấp:', error);
+    req.flash('error', error.message || 'Không thể xóa nhà cung cấp');
+    res.redirect('/admin/suppliers');
+  }
+});
+
+// Xem chi tiết nhà cung cấp
+router.get('/suppliers/:id', async (req, res) => {
+  try {
+    const supplierId = req.params.id;
+    const supplier = await supplierModel.getSupplierById(supplierId);
+    
+    if (!supplier) {
+      return res.status(404).render('error', { 
+        title: 'Không tìm thấy',
+        message: 'Nhà cung cấp không tồn tại' 
+      });
+    }
+    
+    // Lấy phiếu nhập theo nhà cung cấp
+    const imports = await stockModel.getFilteredStockImports({ supplier_id: supplierId });
+    
+    res.render('admin/supplier-detail', { 
+      title: `Chi tiết nhà cung cấp: ${supplier.name}`,
+      supplier,
+      imports
+    });
+  } catch (error) {
+    console.error('Lỗi khi lấy chi tiết nhà cung cấp:', error);
+    res.status(500).render('error', { 
+      title: 'Lỗi hệ thống',
+      message: 'Không thể tải chi tiết nhà cung cấp' 
+    });
+  }
+});
+
+// ============== QUẢN LÝ NHẬP KHO ==============
+// Danh sách phiếu nhập kho
+router.get('/stock/imports', async (req, res) => {
+  try {
+    // Lấy các tham số lọc từ query string
+    const filters = {
+      supplier_id: req.query.supplier_id || '',
+      payment_status: req.query.payment_status || '',
+      from_date: req.query.from_date || '',
+      to_date: req.query.to_date || '',
+      import_code: req.query.import_code || '',
+      month: req.query.month || '',
+      year: req.query.year || ''
+    };
+    
+    // Lấy danh sách nhà cung cấp cho dropdown
+    const suppliers = await supplierModel.getAllSuppliers();
+    
+    // Lấy danh sách phiếu nhập theo bộ lọc
+    const imports = await stockModel.getFilteredStockImports(filters);
+    
+    res.render('admin/stock-imports', { 
+      title: 'Quản lý nhập kho',
+      imports,
+      suppliers,
+      filters,
+      messages: req.flash()
+    });
+  } catch (error) {
+    console.error('Lỗi khi lấy danh sách phiếu nhập kho:', error);
+    res.status(500).render('error', { 
+      title: 'Lỗi hệ thống',
+      message: 'Không thể tải danh sách phiếu nhập kho' 
+    });
+  }
+});
+
+// Form tạo phiếu nhập kho mới
+router.get('/stock/imports/add', async (req, res) => {
+  try {
+    // Lấy danh sách nhà cung cấp
+    const suppliers = await supplierModel.getAllSuppliers();
+    
+    // Lấy danh sách sản phẩm
+    const products = await productModel.getAllProducts();
+    
+    // Tạo mã phiếu nhập mới
+    const importCode = await stockModel.generateImportCode();
+    
+    res.render('admin/stock-import-form', { 
+      title: 'Tạo phiếu nhập kho mới',
+      stockImport: {
+        import_code: importCode,
+        import_date: new Date().toISOString().split('T')[0] // Ngày hiện tại
+      },
+      suppliers,
+      products,
+      mode: 'add',
+      messages: req.flash() || {}
+    });
+  } catch (error) {
+    console.error('Lỗi khi tạo form nhập kho:', error);
+    req.flash('error', 'Không thể tạo form nhập kho');
+    res.status(500).render('error', { 
+      title: 'Lỗi hệ thống',
+      message: 'Không thể tạo form nhập kho',
+      messages: req.flash() || {}
+    });
+  }
+});
+
+// Xử lý tạo phiếu nhập kho mới
+router.post('/stock/imports/add', async (req, res) => {
+  try {
+    const importData = {
+      supplier_id: req.body.supplier_id,
+      import_date: req.body.import_date,
+      import_code: req.body.import_code,
+      total_amount: req.body.total_amount || 0,
+      payment_status: req.body.payment_status || 'pending',
+      note: req.body.notes,
+      created_by: req.session.user ? req.session.user.id : 1
+    };
+    
+    // Xử lý dữ liệu sản phẩm từ form
+    const products = req.body.products || [];
+    const items = [];
+    
+    // Chuyển đổi cấu trúc sản phẩm từ form
+    if (Array.isArray(products)) {
+      // Nếu là mảng cũ (req.body.product_id, req.body.quantity, ...)
+      const productIds = Array.isArray(req.body.product_id) ? req.body.product_id : [req.body.product_id];
+      const quantities = Array.isArray(req.body.quantity) ? req.body.quantity : [req.body.quantity];
+      const prices = Array.isArray(req.body.import_price) ? req.body.import_price : [req.body.import_price];
+      
+      productIds.forEach((productId, index) => {
+        if (productId && quantities[index] > 0) {
+          items.push({
+            product_id: productId,
+            quantity: quantities[index],
+            import_price: prices[index],
+            total_price: quantities[index] * prices[index]
+          });
+        }
+      });
+    } else {
+      // Xử lý cấu trúc sản phẩm mới từ form
+      Object.values(products).forEach(product => {
+        if (product.product_id && product.quantity > 0) {
+          items.push({
+            product_id: product.product_id,
+            quantity: product.quantity,
+            import_price: product.import_price,
+            total_price: product.quantity * product.import_price
+          });
+        }
+      });
+    }
+    
+    // Tính tổng tiền từ các mục
+    const totalAmount = items.reduce((sum, item) => sum + item.total_price, 0);
+    importData.total_amount = totalAmount;
+    
+    if (items.length === 0) {
+      req.flash('error', 'Phiếu nhập kho phải có ít nhất một sản phẩm');
+      return res.redirect('/admin/stock/imports/add');
+    }
+    
+    const importId = await stockModel.createStockImport(importData, items);
+    
+    req.flash('success', 'Đã tạo phiếu nhập kho thành công');
+    res.redirect(`/admin/stock/imports/${importId}`);
+  } catch (error) {
+    console.error('Lỗi khi tạo phiếu nhập kho:', error);
+    req.flash('error', error.message || 'Không thể tạo phiếu nhập kho');
+    res.redirect('/admin/stock/imports/add');
+  }
+});
+
+// Xem chi tiết phiếu nhập kho
+router.get('/stock/imports/:id', async (req, res) => {
+  try {
+    const importId = req.params.id;
+    const stockImport = await stockModel.getStockImportById(importId);
+    
+    if (!stockImport) {
+      req.flash('error', 'Phiếu nhập kho không tồn tại');
+      return res.redirect('/admin/stock/imports');
+    }
+    
+    // Lấy chi tiết các sản phẩm trong phiếu nhập
+    const importItems = await stockModel.getStockImportItems(importId);
+    
+    res.render('admin/stock-import-detail', { 
+      title: `Chi tiết phiếu nhập kho #${stockImport.import_code}`,
+      stockImport,
+      importItems,
+      messages: req.flash() || {}
+    });
+  } catch (error) {
+    console.error('Lỗi khi lấy chi tiết phiếu nhập kho:', error);
+    req.flash('error', 'Không thể tải chi tiết phiếu nhập kho');
+    res.redirect('/admin/stock/imports');
+  }
+});
+
+// In phiếu nhập kho
+router.get('/stock/imports/:id/print', async (req, res) => {
+  try {
+    const importId = req.params.id;
+    const stockImport = await stockModel.getStockImportById(importId);
+    
+    if (!stockImport) {
+      return res.status(404).render('error', { 
+        title: 'Không tìm thấy',
+        message: 'Phiếu nhập kho không tồn tại' 
+      });
+    }
+    
+    res.render('admin/stock-import-print', { 
+      title: `In phiếu nhập kho #${stockImport.import_code}`,
+      stockImport,
+      currentUser: req.session.user
+    });
+  } catch (error) {
+    console.error('Lỗi khi in phiếu nhập kho:', error);
+    res.status(500).render('error', { 
+      title: 'Lỗi hệ thống',
+      message: 'Không thể in phiếu nhập kho' 
+    });
+  }
+});
+
+// Form cập nhật phiếu nhập kho
+router.get('/stock/imports/:id/edit', async (req, res) => {
+  try {
+    const importId = req.params.id;
+    const stockImport = await stockModel.getStockImportById(importId);
+    
+    if (!stockImport) {
+      return res.status(404).render('error', { 
+        title: 'Không tìm thấy',
+        message: 'Phiếu nhập kho không tồn tại' 
+      });
+    }
+    
+    // Chỉ cho phép cập nhật thông tin chung, không cập nhật sản phẩm
+    const suppliers = await supplierModel.getAllSuppliers();
+    
+    res.render('admin/stock-import-edit', { 
+      title: `Cập nhật phiếu nhập kho #${stockImport.import_code}`,
+      stockImport,
+      suppliers
+    });
+  } catch (error) {
+    console.error('Lỗi khi lấy thông tin phiếu nhập kho:', error);
+    res.status(500).render('error', { 
+      title: 'Lỗi hệ thống',
+      message: 'Không thể tải thông tin phiếu nhập kho' 
+    });
+  }
+});
+
+// Xử lý cập nhật phiếu nhập kho
+router.post('/stock/imports/:id/edit', async (req, res) => {
+  try {
+    const importId = req.params.id;
+    const importData = {
+      supplier_id: req.body.supplier_id,
+      import_date: req.body.import_date,
+      payment_status: req.body.payment_status,
+      note: req.body.note
+    };
+    
+    await stockModel.updateStockImport(importId, importData);
+    
+    req.flash('success', 'Đã cập nhật phiếu nhập kho thành công');
+    res.redirect(`/admin/stock/imports/${importId}`);
+  } catch (error) {
+    console.error('Lỗi khi cập nhật phiếu nhập kho:', error);
+    res.status(500).render('error', { 
+      title: 'Lỗi hệ thống',
+      message: 'Không thể cập nhật phiếu nhập kho' 
+    });
+  }
+});
+
+// Xóa phiếu nhập kho
+router.get('/stock/imports/:id/delete', async (req, res) => {
+  try {
+    const importId = req.params.id;
+    
+    await stockModel.deleteStockImport(importId);
+    
+    req.flash('success', 'Đã xóa phiếu nhập kho thành công');
+    res.redirect('/admin/stock/imports');
+  } catch (error) {
+    console.error('Lỗi khi xóa phiếu nhập kho:', error);
+    req.flash('error', error.message || 'Không thể xóa phiếu nhập kho');
+    res.redirect('/admin/stock/imports');
+  }
+});
+
+// Xem lịch sử nhập kho
+router.get('/stock/history', async (req, res) => {
+  try {
+    // Lấy các tham số lọc từ query string
+    const filters = {
+      product_id: req.query.product_id || '',
+      source_type: req.query.source_type || '',
+      from_date: req.query.from_date || '',
+      to_date: req.query.to_date || ''
+    };
+    
+    let stockHistory = [];
+    
+    // Nếu có từ ngày và đến ngày, lấy lịch sử theo khoảng thời gian
+    if (filters.from_date && filters.to_date) {
+      stockHistory = await stockModel.getStockHistoryByDate(
+        filters.from_date, 
+        filters.to_date, 
+        filters.source_type
+      );
+    } 
+    // Nếu có product_id, lấy lịch sử theo sản phẩm
+    else if (filters.product_id) {
+      stockHistory = await stockModel.getStockHistoryByProduct(filters.product_id);
+    }
+    // Nếu không có điều kiện lọc, lấy tất cả (có giới hạn)
+    else {
+      stockHistory = await stockModel.getRecentStockHistory(100);
+    }
+    
+    // Lấy danh sách sản phẩm cho dropdown
+    const products = await productModel.getAllProducts();
+    
+    res.render('admin/stock-history', { 
+      title: 'Lịch sử nhập xuất kho',
+      stockHistory,
+      products,
+      filters,
+      messages: req.flash() || {}
+    });
+  } catch (error) {
+    console.error('Lỗi khi lấy lịch sử nhập kho:', error);
+    req.flash('error', 'Không thể tải lịch sử nhập kho');
+    res.status(500).render('error', { 
+      title: 'Lỗi hệ thống',
+      message: 'Không thể tải lịch sử nhập kho',
+      messages: req.flash() || {}
+    });
+  }
+});
+
+// Thống kê nhập kho
+router.get('/stock/stats', async (req, res) => {
+  try {
+    const year = req.query.year || new Date().getFullYear();
+    const month = req.query.month || '';
+    
+    // Lấy thống kê nhập kho theo năm, tháng
+    const stats = await stockModel.getStockImportStatsByPeriod(year, month);
+    
+    // Lấy danh sách năm để lọc
+    const currentYear = new Date().getFullYear();
+    const years = [];
+    for (let i = currentYear; i >= currentYear - 5; i--) {
+      years.push(i);
+    }
+    
+    res.render('admin/stock-stats', { 
+      title: 'Thống kê nhập kho',
+      stats,
+      filters: {
+        year,
+        month
+      },
+      years,
+      messages: req.flash() || {}
+    });
+  } catch (error) {
+    console.error('Lỗi khi lấy thống kê nhập kho:', error);
+    req.flash('error', 'Không thể tải thống kê nhập kho');
+    res.status(500).render('error', { 
+      title: 'Lỗi hệ thống',
+      message: 'Không thể tải thống kê nhập kho',
+      messages: req.flash() || {}
+    });
   }
 });
 

@@ -1,0 +1,259 @@
+<%- include('../partials/header') %>
+
+<div class="container-fluid">
+  <div class="row">
+    <!-- Sidebar -->
+    <%- include('../partials/admin-sidebar') %>
+
+    <!-- Main content -->
+    <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+      <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">Thống kê nhập kho</h1>
+      </div>
+
+      <!-- Bộ lọc -->
+      <div class="card mb-4">
+        <div class="card-body">
+          <form action="/admin/stock/stats" method="GET" class="row g-3">
+            <div class="col-md-3">
+              <label for="year" class="form-label">Năm</label>
+              <select class="form-select" id="year" name="year">
+                <% if (years && years.length > 0) { %>
+                  <% years.forEach(year => { %>
+                    <option value="<%= year %>" <%= filters.year == year ? 'selected' : '' %>>
+                      <%= year %>
+                    </option>
+                  <% }); %>
+                <% } %>
+              </select>
+            </div>
+            
+            <div class="col-md-3">
+              <label for="month" class="form-label">Tháng</label>
+              <select class="form-select" id="month" name="month">
+                <option value="">Tất cả các tháng</option>
+                <% for (let i = 1; i <= 12; i++) { %>
+                  <option value="<%= i %>" <%= filters.month == i ? 'selected' : '' %>>
+                    Tháng <%= i %>
+                  </option>
+                <% } %>
+              </select>
+            </div>
+            
+            <div class="col-md-6 d-flex align-items-end">
+              <button type="submit" class="btn btn-primary me-2">
+                <i class="fas fa-filter me-1"></i> Lọc
+              </button>
+              <a href="/admin/stock/stats" class="btn btn-secondary">
+                <i class="fas fa-sync-alt me-1"></i> Đặt lại
+              </a>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Biểu đồ và thống kê -->
+      <div class="row">
+        <div class="col-md-8">
+          <div class="card mb-4">
+            <div class="card-header">
+              <h5 class="card-title mb-0">
+                Biểu đồ nhập kho <%= filters.month ? `tháng ${filters.month}` : '' %> năm <%= filters.year %>
+              </h5>
+            </div>
+            <div class="card-body">
+              <canvas id="stockImportChart" height="300"></canvas>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card mb-4">
+            <div class="card-header">
+              <h5 class="card-title mb-0">Tổng quan</h5>
+            </div>
+            <div class="card-body">
+              <div class="mb-3">
+                <h6 class="fw-bold">Tổng giá trị nhập kho</h6>
+                <h4 class="text-primary">
+                  <%= new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(stats.totalValue || 0) %>
+                </h4>
+              </div>
+              <div class="mb-3">
+                <h6 class="fw-bold">Tổng số phiếu nhập</h6>
+                <h4 class="text-success"><%= stats.totalImports || 0 %> phiếu</h4>
+              </div>
+              <div class="mb-3">
+                <h6 class="fw-bold">Tổng số sản phẩm nhập</h6>
+                <h4 class="text-info"><%= stats.totalProducts || 0 %> sản phẩm</h4>
+              </div>
+              <div>
+                <h6 class="fw-bold">Tổng số lượng nhập</h6>
+                <h4 class="text-warning"><%= stats.totalQuantity || 0 %> đơn vị</h4>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bảng sản phẩm nhập nhiều nhất -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="card-title mb-0">Top 10 sản phẩm nhập nhiều nhất</h5>
+        </div>
+        <div class="card-body">
+          <% if (stats.topProducts && stats.topProducts.length > 0) { %>
+            <div class="table-responsive">
+              <table class="table table-striped table-hover">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Sản phẩm</th>
+                    <th>Mã SKU</th>
+                    <th>Số lượng nhập</th>
+                    <th>Giá trị nhập</th>
+                    <th>Tỷ lệ (%)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% stats.topProducts.forEach((product, index) => { %>
+                    <tr>
+                      <td><%= index + 1 %></td>
+                      <td>
+                        <a href="/admin/products/<%= product.id %>"><%= product.name %></a>
+                      </td>
+                      <td><%= product.sku %></td>
+                      <td><%= product.quantity %></td>
+                      <td>
+                        <%= new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(product.total_value) %>
+                      </td>
+                      <td>
+                        <div class="progress">
+                          <div class="progress-bar" role="progressbar" style="width: <%= product.percentage %>%;" 
+                              aria-valuenow="<%= product.percentage %>" aria-valuemin="0" aria-valuemax="100">
+                            <%= product.percentage.toFixed(1) %>%
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  <% }); %>
+                </tbody>
+              </table>
+            </div>
+          <% } else { %>
+            <div class="alert alert-info">
+              <i class="fas fa-info-circle me-2"></i>
+              Không có dữ liệu sản phẩm nhập kho trong khoảng thời gian này.
+            </div>
+          <% } %>
+        </div>
+      </div>
+
+      <!-- Bảng nhà cung cấp -->
+      <div class="card">
+        <div class="card-header">
+          <h5 class="card-title mb-0">Thống kê theo nhà cung cấp</h5>
+        </div>
+        <div class="card-body">
+          <% if (stats.suppliers && stats.suppliers.length > 0) { %>
+            <div class="table-responsive">
+              <table class="table table-striped table-hover">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Nhà cung cấp</th>
+                    <th>Số phiếu nhập</th>
+                    <th>Tổng giá trị</th>
+                    <th>Tỷ lệ (%)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% stats.suppliers.forEach((supplier, index) => { %>
+                    <tr>
+                      <td><%= index + 1 %></td>
+                      <td>
+                        <a href="/admin/suppliers/<%= supplier.id %>"><%= supplier.name %></a>
+                      </td>
+                      <td><%= supplier.import_count %></td>
+                      <td>
+                        <%= new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(supplier.total_value) %>
+                      </td>
+                      <td>
+                        <div class="progress">
+                          <div class="progress-bar bg-success" role="progressbar" style="width: <%= supplier.percentage %>%;" 
+                              aria-valuenow="<%= supplier.percentage %>" aria-valuemin="0" aria-valuemax="100">
+                            <%= supplier.percentage.toFixed(1) %>%
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  <% }); %>
+                </tbody>
+              </table>
+            </div>
+          <% } else { %>
+            <div class="alert alert-info">
+              <i class="fas fa-info-circle me-2"></i>
+              Không có dữ liệu nhập kho từ nhà cung cấp trong khoảng thời gian này.
+            </div>
+          <% } %>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Dữ liệu biểu đồ
+    const chartData = <%= JSON.stringify(stats.chartData || {}) %>;
+    
+    // Cấu hình biểu đồ
+    const ctx = document.getElementById('stockImportChart').getContext('2d');
+    new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: chartData.labels || [],
+        datasets: [{
+          label: 'Giá trị nhập kho',
+          data: chartData.values || [],
+          backgroundColor: 'rgba(54, 162, 235, 0.5)',
+          borderColor: 'rgba(54, 162, 235, 1)',
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              callback: function(value) {
+                return new Intl.NumberFormat('vi-VN', { 
+                  style: 'currency', 
+                  currency: 'VND',
+                  maximumFractionDigits: 0,
+                  notation: 'compact'
+                }).format(value);
+              }
+            }
+          }
+        },
+        plugins: {
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                return new Intl.NumberFormat('vi-VN', { 
+                  style: 'currency', 
+                  currency: 'VND'
+                }).format(context.parsed.y);
+              }
+            }
+          }
+        }
+      }
+    });
+  });
+</script>
+
+<%- include('../partials/footer') %> 

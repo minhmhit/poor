@@ -40,6 +40,18 @@
             </a>
           </li>
           <li class="nav-item">
+            <a class="nav-link" href="/admin/suppliers">
+              <i class="fas fa-truck me-2"></i>
+              Nhà cung cấp
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/admin/stock/imports">
+              <i class="fas fa-warehouse me-2"></i>
+              Nhập kho
+            </a>
+          </li>
+          <li class="nav-item">
             <a class="nav-link" href="/admin/invoices">
               <i class="fas fa-file-invoice-dollar me-2"></i>
               Hóa đơn bán hàng
@@ -168,9 +180,13 @@
         <div class="col-md-6 col-lg-4 mb-4">
           <div class="card h-100">
             <div class="card-body">
-              <h5 class="card-title"><i class="fas fa-file-export me-2"></i>Xuất dữ liệu</h5>
-              <p class="card-text">Xuất báo cáo doanh thu và danh sách sản phẩm bán chạy dưới dạng CSV.</p>
-              <a href="/admin/reports/sales/export" class="btn btn-success">Xuất báo cáo</a>
+              <h5 class="card-title"><i class="fas fa-warehouse me-2"></i>Quản lý nhập kho</h5>
+              <p class="card-text">Xem và quản lý phiếu nhập kho, lịch sử nhập xuất và thống kê kho.</p>
+              <a href="/admin/stock/imports" class="btn btn-success">Xem phiếu nhập kho</a>
+              <div class="mt-2">
+                <a href="/admin/stock/history" class="btn btn-sm btn-outline-secondary">Lịch sử</a>
+                <a href="/admin/stock/stats" class="btn btn-sm btn-outline-info">Thống kê</a>
+              </div>
             </div>
           </div>
         </div>

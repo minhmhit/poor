@@ -1,0 +1,132 @@
+<%- include('../partials/header') %>
+
+<div class="container-fluid">
+  <div class="row">
+    <!-- Sidebar -->
+    <%- include('../partials/admin-sidebar') %>
+
+    <!-- Main content -->
+    <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+      <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">Lịch sử nhập xuất kho</h1>
+      </div>
+
+      <!-- Bộ lọc -->
+      <div class="card mb-4">
+        <div class="card-body">
+          <form action="/admin/stock/history" method="GET" class="row g-3">
+            <div class="col-md-3">
+              <label for="product_id" class="form-label">Sản phẩm</label>
+              <select class="form-select" id="product_id" name="product_id">
+                <option value="">-- Tất cả sản phẩm --</option>
+                <% if (products && products.length > 0) { %>
+                  <% products.forEach(product => { %>
+                    <option value="<%= product.id %>" <%= filters.product_id == product.id ? 'selected' : '' %>>
+                      <%= product.name %> (<%= product.sku %>)
+                    </option>
+                  <% }); %>
+                <% } %>
+              </select>
+            </div>
+            
+            <div class="col-md-2">
+              <label for="source_type" class="form-label">Loại</label>
+              <select class="form-select" id="source_type" name="source_type">
+                <option value="">Tất cả</option>
+                <option value="import" <%= filters.source_type === 'import' ? 'selected' : '' %>>Nhập kho</option>
+                <option value="order" <%= filters.source_type === 'order' ? 'selected' : '' %>>Xuất kho (Đơn hàng)</option>
+                <option value="adjustment" <%= filters.source_type === 'adjustment' ? 'selected' : '' %>>Điều chỉnh</option>
+              </select>
+            </div>
+            
+            <div class="col-md-2">
+              <label for="from_date" class="form-label">Từ ngày</label>
+              <input type="date" class="form-control" id="from_date" name="from_date" value="<%= filters.from_date %>">
+            </div>
+            
+            <div class="col-md-2">
+              <label for="to_date" class="form-label">Đến ngày</label>
+              <input type="date" class="form-control" id="to_date" name="to_date" value="<%= filters.to_date %>">
+            </div>
+            
+            <div class="col-md-3 d-flex align-items-end">
+              <button type="submit" class="btn btn-primary me-2">
+                <i class="fas fa-filter me-1"></i> Lọc
+              </button>
+              <a href="/admin/stock/history" class="btn btn-secondary">
+                <i class="fas fa-sync-alt me-1"></i> Đặt lại
+              </a>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Bảng lịch sử -->
+      <div class="card">
+        <div class="card-body">
+          <% if (stockHistory && stockHistory.length > 0) { %>
+            <div class="table-responsive">
+              <table class="table table-striped table-hover">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Ngày</th>
+                    <th>Sản phẩm</th>
+                    <th>Loại</th>
+                    <th>Số lượng</th>
+                    <th>Tham chiếu</th>
+                    <th>Ghi chú</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% stockHistory.forEach(item => { %>
+                    <tr>
+                      <td><%= item.id %></td>
+                      <td><%= new Date(item.created_at).toLocaleDateString('vi-VN') %></td>
+                      <td><%= item.product_name %> (<%= item.sku %>)</td>
+                      <td>
+                        <% if (item.source_type === 'import') { %>
+                          <span class="badge bg-success">Nhập kho</span>
+                        <% } else if (item.source_type === 'order') { %>
+                          <span class="badge bg-danger">Xuất kho</span>
+                        <% } else if (item.source_type === 'adjustment') { %>
+                          <span class="badge bg-warning text-dark">Điều chỉnh</span>
+                        <% } else { %>
+                          <span class="badge bg-secondary"><%= item.source_type %></span>
+                        <% } %>
+                      </td>
+                      <td>
+                        <% if (item.quantity > 0) { %>
+                          <span class="text-success">+<%= item.quantity %></span>
+                        <% } else { %>
+                          <span class="text-danger"><%= item.quantity %></span>
+                        <% } %>
+                      </td>
+                      <td>
+                        <% if (item.source_type === 'import') { %>
+                          <a href="/admin/stock/imports/<%= item.source_id %>">Phiếu #<%= item.reference_code %></a>
+                        <% } else if (item.source_type === 'order') { %>
+                          <a href="/admin/orders/<%= item.source_id %>">ĐH #<%= item.reference_code %></a>
+                        <% } else { %>
+                          <%= item.reference_code || '-' %>
+                        <% } %>
+                      </td>
+                      <td><%= item.notes || '-' %></td>
+                    </tr>
+                  <% }); %>
+                </tbody>
+              </table>
+            </div>
+          <% } else { %>
+            <div class="alert alert-info">
+              <i class="fas fa-info-circle me-2"></i>
+              Không tìm thấy dữ liệu lịch sử kho. Vui lòng thay đổi bộ lọc hoặc kiểm tra lại sau.
+            </div>
+          <% } %>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<%- include('../partials/footer') %> 

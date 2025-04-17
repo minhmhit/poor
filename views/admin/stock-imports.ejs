@@ -1,0 +1,170 @@
+<%- include('../partials/header') %>
+
+<div class="container-fluid">
+  <div class="row">
+    <!-- Sidebar -->
+    <%- include('../partials/admin-sidebar') %>
+
+    <!-- Main content -->
+    <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+      <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">Quản lý nhập kho</h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+          <a href="/admin/stock/imports/add" class="btn btn-sm btn-primary">
+            <i class="fas fa-plus me-1"></i> Tạo phiếu nhập mới
+          </a>
+        </div>
+      </div>
+
+      <% if (messages && messages.success) { %>
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+          <%= messages.success %>
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      <% } %>
+
+      <% if (messages && messages.error) { %>
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+          <%= messages.error %>
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      <% } %>
+
+      <!-- Bộ lọc -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="card-title mb-0">
+            <i class="fas fa-filter me-1"></i> Bộ lọc
+          </h5>
+        </div>
+        <div class="card-body">
+          <form method="GET" action="/admin/stock/imports" class="row g-3">
+            <div class="col-md-3">
+              <label for="supplier_id" class="form-label">Nhà cung cấp</label>
+              <select class="form-select" id="supplier_id" name="supplier_id">
+                <option value="">Tất cả</option>
+                <% if (suppliers && suppliers.length > 0) { %>
+                  <% suppliers.forEach(supplier => { %>
+                    <option value="<%= supplier.id %>" <%= filters.supplier_id == supplier.id ? 'selected' : '' %>>
+                      <%= supplier.name %>
+                    </option>
+                  <% }); %>
+                <% } %>
+              </select>
+            </div>
+            
+            <div class="col-md-2">
+              <label for="payment_status" class="form-label">Trạng thái thanh toán</label>
+              <select class="form-select" id="payment_status" name="payment_status">
+                <option value="">Tất cả</option>
+                <option value="pending" <%= filters.payment_status === 'pending' ? 'selected' : '' %>>Chưa thanh toán</option>
+                <option value="partial" <%= filters.payment_status === 'partial' ? 'selected' : '' %>>Thanh toán một phần</option>
+                <option value="paid" <%= filters.payment_status === 'paid' ? 'selected' : '' %>>Đã thanh toán</option>
+              </select>
+            </div>
+            
+            <div class="col-md-2">
+              <label for="from_date" class="form-label">Từ ngày</label>
+              <input type="date" class="form-control" id="from_date" name="from_date" value="<%= filters.from_date %>">
+            </div>
+            
+            <div class="col-md-2">
+              <label for="to_date" class="form-label">Đến ngày</label>
+              <input type="date" class="form-control" id="to_date" name="to_date" value="<%= filters.to_date %>">
+            </div>
+            
+            <div class="col-md-3">
+              <label for="import_code" class="form-label">Mã phiếu nhập</label>
+              <input type="text" class="form-control" id="import_code" name="import_code" value="<%= filters.import_code %>" placeholder="Nhập mã phiếu...">
+            </div>
+            
+            <div class="col-12">
+              <button type="submit" class="btn btn-primary">
+                <i class="fas fa-search me-1"></i> Tìm kiếm
+              </button>
+              <a href="/admin/stock/imports" class="btn btn-secondary ms-2">
+                <i class="fas fa-sync-alt me-1"></i> Đặt lại
+              </a>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Bảng danh sách phiếu nhập -->
+      <div class="card">
+        <div class="card-header">
+          <h5 class="card-title mb-0">
+            <i class="fas fa-list me-1"></i> Danh sách phiếu nhập kho
+            <% if (imports && imports.length > 0) { %>
+              <span class="badge bg-primary"><%= imports.length %> phiếu</span>
+            <% } %>
+          </h5>
+        </div>
+        <div class="card-body">
+          <% if (imports && imports.length > 0) { %>
+            <div class="table-responsive">
+              <table class="table table-striped table-hover">
+                <thead>
+                  <tr>
+                    <th>Mã phiếu</th>
+                    <th>Ngày nhập</th>
+                    <th>Nhà cung cấp</th>
+                    <th>Tổng tiền</th>
+                    <th>Trạng thái</th>
+                    <th>Người tạo</th>
+                    <th>Thao tác</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% imports.forEach(item => { %>
+                    <tr>
+                      <td><a href="/admin/stock/imports/<%= item.id %>"><%= item.import_code %></a></td>
+                      <td><%= new Date(item.import_date).toLocaleDateString('vi-VN') %></td>
+                      <td>
+                        <% if (item.supplier_id) { %>
+                          <a href="/admin/suppliers/<%= item.supplier_id %>"><%= item.supplier_name %></a>
+                        <% } else { %>
+                          <span class="text-muted">Không có</span>
+                        <% } %>
+                      </td>
+                      <td><%= new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(item.total_amount) %></td>
+                      <td>
+                        <% if (item.payment_status === 'pending' || item.payment_status === 'unpaid') { %>
+                          <span class="badge bg-warning">Chưa thanh toán</span>
+                        <% } else if (item.payment_status === 'partial') { %>
+                          <span class="badge bg-info">Thanh toán một phần</span>
+                        <% } else if (item.payment_status === 'paid' || item.payment_status === 'completed') { %>
+                          <span class="badge bg-success">Đã thanh toán</span>
+                        <% } %>
+                      </td>
+                      <td><%= item.created_by_name || 'Admin' %></td>
+                      <td>
+                        <div class="btn-group btn-group-sm">
+                          <a href="/admin/stock/imports/<%= item.id %>" class="btn btn-outline-primary">
+                            <i class="fas fa-eye"></i>
+                          </a>
+                          <a href="/admin/stock/imports/<%= item.id %>/edit" class="btn btn-outline-success">
+                            <i class="fas fa-edit"></i>
+                          </a>
+                          <a href="/admin/stock/imports/<%= item.id %>/print" target="_blank" class="btn btn-outline-secondary">
+                            <i class="fas fa-print"></i>
+                          </a>
+                        </div>
+                      </td>
+                    </tr>
+                  <% }); %>
+                </tbody>
+              </table>
+            </div>
+          <% } else { %>
+            <div class="alert alert-info">
+              <i class="fas fa-info-circle me-2"></i> Không tìm thấy phiếu nhập kho nào. Vui lòng thử thay đổi bộ lọc hoặc <a href="/admin/stock/imports/add">tạo phiếu nhập mới</a>.
+            </div>
+          <% } %>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<%- include('../partials/footer') %> 
