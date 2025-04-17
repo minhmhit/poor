@@ -67,6 +67,12 @@
                 <strong>Quyền:</strong>
                 <% if (user.role === 'admin') { %>
                   <span class="badge bg-danger">Quản trị viên</span>
+                <% } else if (user.role === 'manager')  { %>
+                  <span class="badge bg-warning">Quản lý</span>
+                <% } else if (user.role === 'sale') { %>
+                  <span class="badge bg-success">Nhân viên bán hàng</span>
+                <% } else if (user.role === 'warehouse') { %>
+                  <span class="badge bg-info">Nhân viên kho</span>
                 <% } else { %>
                   <span class="badge bg-success">Khách hàng</span>
                 <% } %>
@@ -76,7 +82,7 @@
           </div>
           
           <!-- Cập nhật quyền -->
-          <div class="card mb-4">
+          <!-- <div class="card mb-4">
             <div class="card-header">
               <h5 class="card-title mb-0">Cập nhật quyền</h5>
             </div>
@@ -94,7 +100,7 @@
                 </div>
               </form>
             </div>
-          </div>
+          </div> -->
         </div>
 
         <!-- Thông tin khách hàng -->

@@ -87,9 +87,70 @@ const adminModel = {
       
       user.orders = orders;
       
+      // Chuyển đổi permissions từ JSON sang mảng nếu có
+      if (user.permissions && typeof user.permissions === 'string') {
+        try {
+          user.permissions = JSON.parse(user.permissions);
+        } catch (e) {
+          user.permissions = [];
+        }
+      } else {
+        user.permissions = [];
+      }
+      
       return user;
     } catch (error) {
       console.error(`Lỗi khi lấy thông tin người dùng ID ${id}:`, error);
+      throw error;
+    }
+  },
+  
+  // Lấy thông tin người dùng theo email
+  getUserByEmail: async (email) => {
+    try {
+      const [users] = await pool.query(`
+        SELECT * FROM users WHERE email = ?
+      `, [email]);
+      
+      return users.length > 0 ? users[0] : null;
+    } catch (error) {
+      console.error(`Lỗi khi lấy thông tin người dùng với email ${email}:`, error);
+      throw error;
+    }
+  },
+  
+  // Tạo người dùng mới
+  createUser: async (userData) => {
+    try {
+      const { name, email, password, phone, address, role, status } = userData;
+      
+      // Hash mật khẩu trước khi lưu vào DB
+      const bcrypt = require('bcrypt');
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(password, salt);
+      
+      const [result] = await pool.query(`
+        INSERT INTO users (name, email, password,   role, status, created_at)
+        VALUES (?, ?, ?, ?,  ?, NOW())
+      `, [name, email, hashedPassword,  role || 'customer', status || 'active']);
+      
+      return result.insertId;
+    } catch (error) {
+      console.error('Lỗi khi tạo người dùng mới:', error);
+      throw error;
+    }
+  },
+  
+  // Xóa người dùng
+  deleteUser: async (id) => {
+    try {
+      const [result] = await pool.query(`
+        DELETE FROM users WHERE id = ?
+      `, [id]);
+      
+      return result.affectedRows > 0;
+    } catch (error) {
+      console.error(`Lỗi khi xóa người dùng ID ${id}:`, error);
       throw error;
     }
   },
@@ -108,6 +169,55 @@ const adminModel = {
     }
   },
   
+  // Cập nhật trạng thái tài khoản
+  updateUserStatus: async (id, status) => {
+    try {
+      const [result] = await pool.query(`
+        UPDATE users SET status = ? WHERE id = ?
+      `, [status, id]);
+      
+      return result.affectedRows > 0;
+    } catch (error) {
+      console.error(`Lỗi khi cập nhật trạng thái người dùng ID ${id}:`, error);
+      throw error;
+    }
+  },
+  
+  // Cập nhật thông tin tài khoản
+  updateUserInfo: async (id, userData) => {
+    try {
+      const { name, email, phone, address } = userData;
+      
+      const [result] = await pool.query(`
+        UPDATE users 
+        SET name = ?, email = ?, phone = ?, address = ?, updated_at = NOW()
+        WHERE id = ?
+      `, [name, email, phone, address, id]);
+      
+      return result.affectedRows > 0;
+    } catch (error) {
+      console.error(`Lỗi khi cập nhật thông tin người dùng ID ${id}:`, error);
+      throw error;
+    }
+  },
+  
+  // Cập nhật quyền người dùng
+  updateUserPermissions: async (id, permissions) => {
+    try {
+      // Lưu dưới dạng JSON
+      const permissionsJSON = JSON.stringify(permissions);
+      
+      const [result] = await pool.query(`
+        UPDATE users SET permissions = ? WHERE id = ?
+      `, [permissionsJSON, id]);
+      
+      return result.affectedRows > 0;
+    } catch (error) {
+      console.error(`Lỗi khi cập nhật quyền chi tiết cho người dùng ID ${id}:`, error);
+      throw error;
+    }
+  },
+  
   // Đếm số người dùng theo quyền
   countUsersByRole: async () => {
     try {
@@ -120,6 +230,9 @@ const adminModel = {
       const result = {
         admin: 0,
         customer: 0,
+        warehouse: 0,
+        manager: 0,
+        sale: 0,
         total: 0
       };
       

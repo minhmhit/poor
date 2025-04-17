@@ -404,13 +404,75 @@ router.get('/users', async (req, res) => {
     const users = await adminModel.getAllUsers();
     res.render('admin/users', { 
       title: 'Quản lý người dùng',
-      users
+      users,
+      messages: req.flash()
     });
   } catch (error) {
     console.error('Lỗi khi lấy danh sách người dùng:', error);
     res.status(500).render('error', { 
       title: 'Lỗi hệ thống',
       message: 'Không thể tải danh sách người dùng' 
+    });
+  }
+});
+
+// Quản lý người dùng - thêm mới
+router.get('/users/add', async (req, res) => {
+  try {
+    res.render('admin/user-form', { 
+      title: 'Thêm người dùng mới',
+      user: {},
+      error: null
+    });
+  } catch (error) {
+    console.error('Lỗi khi tạo form thêm người dùng:', error);
+    res.status(500).render('error', { 
+      title: 'Lỗi hệ thống',
+      message: 'Không thể tạo form thêm người dùng' 
+    });
+  }
+});
+
+// Quản lý người dùng - xử lý thêm mới
+router.post('/users/add', async (req, res) => {
+  try {
+    const userData = req.body;
+    
+    // Kiểm tra mật khẩu xác nhận
+    if (userData.password !== userData.password_confirm) {
+      return res.status(400).render('admin/user-form', {
+        title: 'Thêm người dùng mới',
+        user: userData,
+        error: 'Mật khẩu xác nhận không khớp'
+      });
+    }
+    
+    // Kiểm tra email đã tồn tại
+    const existingUser = await adminModel.getUserByEmail(userData.email);
+    if (existingUser) {
+      return res.status(400).render('admin/user-form', {
+        title: 'Thêm người dùng mới',
+        user: userData,
+        error: 'Email đã được sử dụng'
+      });
+    }
+    
+    // Tạo người dùng mới
+    const userId = await adminModel.createUser(userData);
+    
+    // Cập nhật quyền chi tiết nếu có
+    if (userData.permissions) {
+      const permissions = Array.isArray(userData.permissions) ? userData.permissions : [userData.permissions];
+      await adminModel.updateUserPermissions(userId, permissions);
+    }
+    
+    req.flash('success', 'Đã thêm người dùng mới thành công');
+    res.redirect('/admin/users');
+  } catch (error) {
+    console.error('Lỗi khi thêm người dùng:', error);
+    res.status(500).render('error', { 
+      title: 'Lỗi thêm người dùng',
+      message: 'Không thể thêm người dùng mới' 
     });
   }
 });
@@ -456,6 +518,117 @@ router.post('/users/:id/update-role', async (req, res) => {
     res.status(500).render('error', { 
       title: 'Lỗi cập nhật',
       message: 'Không thể cập nhật quyền người dùng' 
+    });
+  }
+});
+
+// Quản lý người dùng - cập nhật trạng thái
+router.post('/users/:id/update-status', async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const { status } = req.body;
+    
+    await adminModel.updateUserStatus(userId, status);
+    
+    req.flash('success', 'Đã cập nhật trạng thái tài khoản thành công');
+    res.redirect(`/admin/users/${userId}`);
+  } catch (error) {
+    console.error('Lỗi khi cập nhật trạng thái tài khoản:', error);
+    res.status(500).render('error', { 
+      title: 'Lỗi cập nhật',
+      message: 'Không thể cập nhật trạng thái tài khoản' 
+    });
+  }
+});
+
+// Quản lý người dùng - chỉnh sửa
+router.get('/users/:id/edit', async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const user = await adminModel.getUserById(userId);
+    
+    if (!user) {
+      return res.status(404).render('error', { 
+        title: 'Không tìm thấy',
+        message: 'Người dùng không tồn tại' 
+      });
+    }
+    
+    res.render('admin/user-form', { 
+      title: `Chỉnh sửa thông tin người dùng: ${user.name}`,
+      user,
+      error: null
+    });
+  } catch (error) {
+    console.error('Lỗi khi lấy thông tin người dùng để chỉnh sửa:', error);
+    res.status(500).render('error', { 
+      title: 'Lỗi hệ thống',
+      message: 'Không thể tải thông tin người dùng để chỉnh sửa' 
+    });
+  }
+});
+
+// Quản lý người dùng - xử lý sửa thông tin
+router.post('/users/:id/edit', async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const userData = req.body;
+    
+    // Cập nhật thông tin cơ bản
+    await adminModel.updateUserInfo(userId, userData);
+    
+    // Cập nhật vai trò nếu có
+    if (userData.role) {
+      await adminModel.updateUserRole(userId, userData.role);
+    }
+    
+    // Cập nhật trạng thái nếu có
+    if (userData.status) {
+      await adminModel.updateUserStatus(userId, userData.status);
+    }
+    
+    // Cập nhật quyền chi tiết nếu có
+    if (userData.permissions) {
+      // Nếu permissions được gửi là một giá trị đơn (không phải mảng), 
+      // thì chuyển thành mảng có một phần tử
+      const permissions = Array.isArray(userData.permissions) ? userData.permissions : [userData.permissions];
+      await adminModel.updateUserPermissions(userId, permissions);
+    } else {
+      // Nếu không có quyền nào được chọn, gán mảng rỗng
+      await adminModel.updateUserPermissions(userId, []);
+    }
+    
+    req.flash('success', 'Đã cập nhật thông tin người dùng thành công');
+    res.redirect(`/admin/users/${userId}`);
+  } catch (error) {
+    console.error('Lỗi khi cập nhật thông tin người dùng:', error);
+    res.status(500).render('error', { 
+      title: 'Lỗi cập nhật',
+      message: 'Không thể cập nhật thông tin người dùng' 
+    });
+  }
+});
+
+// Quản lý người dùng - xóa
+router.get('/users/:id/delete', async (req, res) => {
+  try {
+    const userId = req.params.id;
+    
+    // Không cho phép xóa tài khoản đang đăng nhập
+    if (req.session.user && req.session.user.id == userId) {
+      req.flash('error', 'Không thể xóa tài khoản đang đăng nhập');
+      return res.redirect('/admin/users');
+    }
+    
+    await adminModel.deleteUser(userId);
+    
+    req.flash('success', 'Đã xóa người dùng thành công');
+    res.redirect('/admin/users');
+  } catch (error) {
+    console.error('Lỗi khi xóa người dùng:', error);
+    res.status(500).render('error', { 
+      title: 'Lỗi xóa người dùng',
+      message: 'Không thể xóa người dùng' 
     });
   }
 });
