@@ -194,6 +194,7 @@
         </td>
         <td>
           <span class="product-total">0 ₫</span>
+          <input type="hidden" name="products[{index}][total_price]" class="product-total-input" value="0">
         </td>
         <td>
           <button type="button" class="btn btn-sm btn-danger remove-product">
@@ -211,6 +212,40 @@
         const totalAmountElement = document.getElementById('totalAmount');
         const addProductBtn = document.getElementById('addProductBtn');
         const productRowTemplate = document.getElementById('productRowTemplate');
+        const stockImportForm = document.getElementById('stockImportForm');
+
+        // Xử lý form submit
+        stockImportForm.addEventListener('submit', function(e) {
+          const productRows = document.querySelectorAll('.product-row');
+          if (productRows.length === 0) {
+            e.preventDefault();
+            alert('Phiếu nhập kho phải có ít nhất một sản phẩm');
+            return false;
+          }
+          
+          // Kiểm tra xem có ít nhất một sản phẩm hợp lệ
+          let hasValidProduct = false;
+          
+          // Cập nhật tổng tiền của từng sản phẩm trước khi submit
+          productRows.forEach(row => {
+            const productSelect = row.querySelector('.product-select');
+            const quantityInput = row.querySelector('.product-quantity');
+            
+            if (productSelect && productSelect.value && 
+                quantityInput && parseInt(quantityInput.value) > 0) {
+              hasValidProduct = true;
+              updateRowTotal(row, true);
+            }
+          });
+          
+          if (!hasValidProduct) {
+            e.preventDefault();
+            alert('Cần chọn ít nhất một sản phẩm với số lượng lớn hơn 0');
+            return false;
+          }
+          
+          return true;
+        });
 
         // Thêm sản phẩm mới
         addProductBtn.addEventListener('click', function() {
@@ -277,16 +312,29 @@
               updateRowTotal(row);
               calculateTotal();
             });
+            
+            // Thêm sự kiện input để cập nhật ngay khi người dùng nhập
+            input.addEventListener('input', function() {
+              const row = this.closest('.product-row');
+              updateRowTotal(row);
+              calculateTotal();
+            });
           });
         }
 
         // Cập nhật tổng tiền cho một hàng
-        function updateRowTotal(row) {
+        function updateRowTotal(row, finalUpdate = false) {
           const quantity = parseInt(row.querySelector('.product-quantity').value) || 0;
           const price = parseInt(row.querySelector('.product-price').value) || 0;
           const total = quantity * price;
           
           row.querySelector('.product-total').textContent = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(total);
+          
+          // Cập nhật hidden input để gửi tổng tiền
+          const totalInput = row.querySelector('.product-total-input');
+          if (totalInput) {
+            totalInput.value = total;
+          }
         }
 
         // Tính tổng tiền cho toàn bộ phiếu nhập
@@ -299,6 +347,17 @@
           });
           
           totalAmountElement.textContent = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(total);
+          
+          // Thêm input ẩn để gửi tổng số tiền
+          let totalAmountInput = document.getElementById('total_amount_input');
+          if (!totalAmountInput) {
+            totalAmountInput = document.createElement('input');
+            totalAmountInput.type = 'hidden';
+            totalAmountInput.id = 'total_amount_input';
+            totalAmountInput.name = 'total_amount';
+            stockImportForm.appendChild(totalAmountInput);
+          }
+          totalAmountInput.value = total;
         }
 
         // Thêm ít nhất một hàng sản phẩm khi trang được tải

@@ -247,6 +247,18 @@ const stockModel = {
         importData.import_code = `${prefix}${suffix}`;
       }
       
+      // Kiểm tra và đảm bảo các trường chính
+      if (!importData.supplier_id) {
+        throw new Error('Vui lòng chọn nhà cung cấp');
+      }
+      
+      if (!importData.import_date) {
+        importData.import_date = new Date().toISOString().split('T')[0];
+      }
+      
+      console.log('Dữ liệu phiếu nhập:', importData);
+      console.log('Dữ liệu sản phẩm nhập:', itemsData);
+      
       // Thêm phiếu nhập kho
       const [importResult] = await connection.query(`
         INSERT INTO stock_imports (
@@ -258,16 +270,26 @@ const stockModel = {
         importData.import_date,
         importData.import_code,
         importData.total_amount || 0,
-        importData.payment_status || 'unpaid',
+        importData.payment_status || 'pending',
         importData.note || null,
-        importData.created_by,
-        importData.created_at
+        importData.created_by || 1
       ]);
       
       const importId = importResult.insertId;
       
       // Thêm chi tiết sản phẩm và cập nhật số lượng tồn kho
       for (const item of itemsData) {
+        // Đảm bảo các trường có giá trị hợp lệ
+        const product_id = parseInt(item.product_id);
+        const quantity = parseInt(item.quantity);
+        const import_price = parseInt(item.import_price);
+        const total_price = item.total_price ? parseInt(item.total_price) : (quantity * import_price);
+        
+        if (!product_id || quantity <= 0) {
+          console.warn('Bỏ qua sản phẩm không hợp lệ:', item);
+          continue;
+        }
+        
         // Thêm chi tiết sản phẩm vào phiếu nhập
         await connection.query(`
           INSERT INTO stock_import_items (
@@ -275,27 +297,31 @@ const stockModel = {
           ) VALUES (?, ?, ?, ?, ?, NOW())
         `, [
           importId,
-          item.product_id,
-          item.quantity,
-          item.import_price,
-          item.total_price || (item.quantity * item.import_price),
-          item.created_at
+          product_id,
+          quantity,
+          import_price,
+          total_price
         ]);
         
         // Lấy số lượng hiện tại của sản phẩm
         const [stockResult] = await connection.query(`
           SELECT stock FROM products WHERE id = ?
-        `, [item.product_id]);
+        `, [product_id]);
         
-        const currentStock = stockResult[0].stock;
-        const newStock = currentStock + parseInt(item.quantity);
+        if (stockResult.length === 0) {
+          console.warn(`Không tìm thấy sản phẩm với ID ${product_id}`);
+          continue;
+        }
+        
+        const currentStock = parseInt(stockResult[0].stock) || 0;
+        const newStock = currentStock + quantity;
         
         // Cập nhật số lượng trong bảng products
         await connection.query(`
           UPDATE products 
           SET stock = ?, updated_at = NOW()
           WHERE id = ?
-        `, [newStock, item.product_id]);
+        `, [newStock, product_id]);
         
         // Ghi lịch sử thay đổi số lượng
         await connection.query(`
@@ -304,14 +330,14 @@ const stockModel = {
             source_type, source_id, note, created_by, created_at
           ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())
         `, [
-          item.product_id,
+          product_id,
           currentStock,
-          item.quantity,
+          quantity,
           newStock,
           'import',
           importId,
           `Nhập kho từ phiếu ${importData.import_code}`,
-          importData.created_by
+          importData.created_by || 1
         ]);
       }
       
@@ -709,7 +735,7 @@ const stockModel = {
     }
   },
   
-  // Tạo mã phiếu nhập mới
+  // Tạo mã phiếu nhập kho mới
   generateImportCode: async () => {
     try {
       const todayFormatted = formatDate(new Date(), 'yyyyMMdd');
@@ -735,8 +761,9 @@ const stockModel = {
       const suffix = nextNumber.toString().padStart(3, '0');
       return `${prefix}${suffix}`;
     } catch (error) {
-      console.error('Lỗi khi tạo mã phiếu nhập mới:', error);
-      return `NK-${formatDate(new Date(), 'yyyyMMdd')}-001`; // Mã mặc định nếu có lỗi
+      console.error('Lỗi khi tạo mã phiếu nhập:', error);
+      // Trả về mã dự phòng nếu có lỗi
+      return `NK-${formatDate(new Date(), 'yyyyMMdd')}-001`;
     }
   }
 };

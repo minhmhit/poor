@@ -48,9 +48,39 @@ const isAdmin = (req, res, next) => {
   }
 };
 
+// Middleware kiểm tra quyền manager
+const isManager = (req, res, next) => {
+  if (req.session && req.session.user && req.session.user.role === 'manager') {
+    next();
+  } else {
+    req.flash('error', 'Bạn không có quyền truy cập trang quản trị');
+    res.redirect('/auth/login');
+  }
+};
+
+// Middleware kiểm tra quyền sale
+const isSale = (req, res, next) => {
+  if (req.session && req.session.user && req.session.user.role === 'sale') {
+    next();
+  } else {
+    req.flash('error', 'Bạn không có quyền truy cập trang quản trị');
+    res.redirect('/auth/login');
+  }
+};
+// Middleware kiểm tra quyền warehouse
+const isWarehouse = (req, res, next) => {
+  if (req.session && req.session.user && req.session.user.role === 'warehouse') {
+    next();
+  } else {
+    req.flash('error', 'Bạn không có quyền truy cập trang quản trị');
+    res.redirect('/auth/login');
+  }
+};
+
 // Áp dụng middleware cho tất cả các route admin
 router.use(isLoggedIn);
 router.use(isAdmin);
+
 
 // Trang quản trị chính
 router.get('/', async (req, res) => {
@@ -77,6 +107,7 @@ router.get('/', async (req, res) => {
 });
 
 // ============== QUẢN LÝ SẢN PHẨM ==============
+// chỉ cho phép manager và admin truy cập
 // Quản lý sản phẩm - danh sách
 router.get('/products', async (req, res) => {
   try {
@@ -1122,7 +1153,7 @@ router.get('/stock/imports/add', async (req, res) => {
     });
   } catch (error) {
     console.error('Lỗi khi tạo form nhập kho:', error);
-    req.flash('error', 'Không thể tạo form nhập kho');
+    req.flash('error', 'Không thể tạo form nhập kho: ' + error.message);
     res.status(500).render('error', { 
       title: 'Lỗi hệ thống',
       message: 'Không thể tạo form nhập kho',
@@ -1134,6 +1165,8 @@ router.get('/stock/imports/add', async (req, res) => {
 // Xử lý tạo phiếu nhập kho mới
 router.post('/stock/imports/add', async (req, res) => {
   try {
+    console.log('Dữ liệu form:', req.body);
+
     const importData = {
       supplier_id: req.body.supplier_id,
       import_date: req.body.import_date,
@@ -1148,39 +1181,56 @@ router.post('/stock/imports/add', async (req, res) => {
     const products = req.body.products || [];
     const items = [];
     
-    // Chuyển đổi cấu trúc sản phẩm từ form
+    // Kiểm tra cấu trúc dữ liệu sản phẩm và xử lý phù hợp
     if (Array.isArray(products)) {
-      // Nếu là mảng cũ (req.body.product_id, req.body.quantity, ...)
-      const productIds = Array.isArray(req.body.product_id) ? req.body.product_id : [req.body.product_id];
-      const quantities = Array.isArray(req.body.quantity) ? req.body.quantity : [req.body.quantity];
-      const prices = Array.isArray(req.body.import_price) ? req.body.import_price : [req.body.import_price];
-      
-      productIds.forEach((productId, index) => {
-        if (productId && quantities[index] > 0) {
+      // Nếu products là mảng (định dạng mới)
+      products.forEach(product => {
+        if (product && product.product_id && parseInt(product.quantity) > 0) {
           items.push({
-            product_id: productId,
-            quantity: quantities[index],
-            import_price: prices[index],
-            total_price: quantities[index] * prices[index]
+            product_id: product.product_id,
+            quantity: parseInt(product.quantity),
+            import_price: parseFloat(product.import_price),
+            total_price: parseInt(product.quantity) * parseFloat(product.import_price)
+          });
+        }
+      });
+    } else if (typeof products === 'object' && products !== null) {
+      // Xử lý cấu trúc khi products là object (định dạng index[product_id])
+      Object.keys(products).forEach(key => {
+        const product = products[key];
+        if (product && product.product_id && parseInt(product.quantity) > 0) {
+          items.push({
+            product_id: product.product_id,
+            quantity: parseInt(product.quantity),
+            import_price: parseFloat(product.import_price),
+            total_price: parseInt(product.quantity) * parseFloat(product.import_price)
           });
         }
       });
     } else {
-      // Xử lý cấu trúc sản phẩm mới từ form
-      Object.values(products).forEach(product => {
-        if (product.product_id && product.quantity > 0) {
-          items.push({
-            product_id: product.product_id,
-            quantity: product.quantity,
-            import_price: product.import_price,
-            total_price: product.quantity * product.import_price
-          });
-        }
-      });
+      // Xử lý kiểu cũ (product_id, quantity nằm trực tiếp trong req.body)
+      const productIds = Array.isArray(req.body.product_id) ? req.body.product_id : [req.body.product_id];
+      const quantities = Array.isArray(req.body.quantity) ? req.body.quantity : [req.body.quantity];
+      const prices = Array.isArray(req.body.import_price) ? req.body.import_price : [req.body.import_price];
+      
+      if (productIds && productIds.length > 0) {
+        productIds.forEach((productId, index) => {
+          if (productId && quantities[index] && parseInt(quantities[index]) > 0) {
+            items.push({
+              product_id: productId,
+              quantity: parseInt(quantities[index]),
+              import_price: parseFloat(prices[index]),
+              total_price: parseInt(quantities[index]) * parseFloat(prices[index])
+            });
+          }
+        });
+      }
     }
     
+    console.log('Các sản phẩm được xử lý:', items);
+    
     // Tính tổng tiền từ các mục
-    const totalAmount = items.reduce((sum, item) => sum + item.total_price, 0);
+    const totalAmount = items.reduce((sum, item) => sum + (item.total_price || 0), 0);
     importData.total_amount = totalAmount;
     
     if (items.length === 0) {
