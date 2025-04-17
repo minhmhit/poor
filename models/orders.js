@@ -17,6 +17,53 @@ const orderModel = {
     }
   },
 
+  // Lấy đơn hàng có lọc
+  getFilteredOrders: async (filters = {}) => {
+    try {
+      let query = `
+        SELECT o.*, u.name as user_name, u.email as user_email
+        FROM orders o
+        LEFT JOIN users u ON o.user_id = u.id
+        WHERE 1=1
+      `;
+      
+      const queryParams = [];
+      
+      // Lọc theo trạng thái
+      if (filters.status) {
+        query += ` AND o.status = ?`;
+        queryParams.push(filters.status);
+      }
+      
+      // Lọc theo từ khóa tìm kiếm (ID, tên, email)
+      if (filters.q) {
+        query += ` AND (
+          o.id LIKE ? OR 
+          o.customer_name LIKE ? OR 
+          o.customer_email LIKE ? OR
+          u.name LIKE ? OR 
+          u.email LIKE ?
+        )`;
+        const searchTerm = `%${filters.q}%`;
+        queryParams.push(searchTerm, searchTerm, searchTerm, searchTerm, searchTerm);
+      }
+      
+      // Lọc theo ngày đặt hàng
+      if (filters.date) {
+        query += ` AND DATE(o.created_at) = ?`;
+        queryParams.push(filters.date);
+      }
+      
+      query += ` ORDER BY o.created_at DESC`;
+      
+      const [rows] = await pool.query(query, queryParams);
+      return rows;
+    } catch (error) {
+      console.error('Lỗi khi lấy danh sách đơn hàng có lọc:', error);
+      throw error;
+    }
+  },
+
   // Lấy đơn hàng theo ID
   getOrderById: async (id) => {
     try {

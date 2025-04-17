@@ -39,6 +39,18 @@
               Người dùng
             </a>
           </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/admin/invoices">
+              <i class="fas fa-file-invoice-dollar me-2"></i>
+              Hóa đơn bán hàng
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/admin/reports/sales">
+              <i class="fas fa-chart-bar me-2"></i>
+              Báo cáo doanh thu
+            </a>
+          </li>
         </ul>
       </div>
     </div>
@@ -78,46 +90,61 @@
               <label for="role" class="form-label">Quyền</label>
               <select class="form-select" id="role" name="role">
                 <option value="">Tất cả quyền</option>
-                <option value="admin">Quản trị viên</option>
-                <option value="customer">Khách hàng</option>
-                <option value="warehouse">Nhân viên kho</option>
-                <option value="manager">Quản lý</option>
-                <option value="sale">Nhân viên bán hàng</option>
+                <option value="admin" <%= filters && filters.role === 'admin' ? 'selected' : '' %>>Quản trị viên</option>
+                <option value="customer" <%= filters && filters.role === 'customer' ? 'selected' : '' %>>Khách hàng</option>
+                <option value="warehouse" <%= filters && filters.role === 'warehouse' ? 'selected' : '' %>>Nhân viên kho</option>
+                <option value="manager" <%= filters && filters.role === 'manager' ? 'selected' : '' %>>Quản lý</option>
+                <option value="sale" <%= filters && filters.role === 'sale' ? 'selected' : '' %>>Nhân viên bán hàng</option>
               </select>
             </div>
-            <div class="col-md-5">
+            <div class="col-md-3">
               <label for="search" class="form-label">Tìm kiếm</label>
-              <input type="text" class="form-control" id="search" name="q" placeholder="Tên người dùng, email...">
+              <input type="text" class="form-control" id="search" name="q" placeholder="Tên người dùng, email..." value="<%= filters && filters.q ? filters.q : '' %>">
+            </div>
+            <div class="col-md-2">
+              <label for="status" class="form-label">Trạng thái</label>
+              <select class="form-select" id="status" name="status">
+                <option value="">Tất cả trạng thái</option>
+                <option value="active" <%= filters && filters.status === 'active' ? 'selected' : '' %>>Hoạt động</option>
+                <option value="inactive" <%= filters && filters.status === 'inactive' ? 'selected' : '' %>>Vô hiệu hóa</option>
+              </select>
             </div>
             <div class="col-md-2">
               <label for="date" class="form-label">Ngày đăng ký</label>
-              <input type="date" class="form-control" id="date" name="date">
+              <input type="date" class="form-control" id="date" name="date" value="<%= filters && filters.date ? filters.date : '' %>">
             </div>
             <div class="col-md-2 d-flex align-items-end">
-              <button type="submit" class="btn btn-primary w-100">
+              <button type="submit" class="btn btn-primary me-2">
                 <i class="fas fa-search me-1"></i> Lọc
               </button>
+              <a href="/admin/users" class="btn btn-secondary">
+                <i class="fas fa-sync-alt"></i>
+              </a>
             </div>
           </form>
         </div>
       </div>
 
-      <div class="table-responsive">
-        <table class="table table-striped table-hover">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Họ tên</th>
-              <th>Email</th>
-              <th>Vai trò</th>
-              <th>Trạng thái</th>
-              <th>Đơn hàng</th>
-              <th>Ngày đăng ký</th>
-              <th>Hành động</th>
-            </tr>
-          </thead>
-          <tbody>
-            <% if (users && users.length > 0) { %>
+      <% if (users && users.length > 0) { %>
+        <div class="alert alert-info">
+          Hiển thị <%= users.length %> người dùng <%= filters && (filters.role || filters.q || filters.date || filters.status) ? 'phù hợp với bộ lọc' : '' %>
+        </div>
+        
+        <div class="table-responsive">
+          <table class="table table-striped table-hover">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Họ tên</th>
+                <th>Email</th>
+                <th>Vai trò</th>
+                <th>Trạng thái</th>
+                <th>Đơn hàng</th>
+                <th>Ngày đăng ký</th>
+                <th>Hành động</th>
+              </tr>
+            </thead>
+            <tbody>
               <% users.forEach(user => { %>
                 <tr>
                   <td>#<%= user.id %></td>
@@ -153,14 +180,18 @@
                   </td>
                 </tr>
               <% }) %>
-            <% } else { %>
-              <tr>
-                <td colspan="8" class="text-center">Không có người dùng nào</td>
-              </tr>
-            <% } %>
-          </tbody>
-        </table>
-      </div>
+            </tbody>
+          </table>
+        </div>
+      <% } else { %>
+        <div class="alert alert-warning">
+          <% if (filters && (filters.role || filters.q || filters.date || filters.status)) { %>
+            Không tìm thấy người dùng nào phù hợp với bộ lọc. <a href="/admin/users">Xem tất cả người dùng</a>
+          <% } else { %>
+            Không có người dùng nào trong hệ thống.
+          <% } %>
+        </div>
+      <% } %>
     </main>
   </div>
 </div>

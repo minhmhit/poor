@@ -39,6 +39,18 @@
               Người dùng
             </a>
           </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/admin/invoices">
+              <i class="fas fa-file-invoice-dollar me-2"></i>
+              Hóa đơn bán hàng
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/admin/reports/sales">
+              <i class="fas fa-chart-bar me-2"></i>
+              Báo cáo doanh thu
+            </a>
+          </li>
         </ul>
       </div>
     </div>
@@ -118,6 +130,50 @@
             </tr>
           </tbody>
         </table>
+      </div>
+
+      <!-- Thêm phần quản lý báo cáo và hóa đơn -->
+      <div class="row mt-4">
+        <div class="col-12">
+          <h2 class="h4 mb-3 border-bottom pb-2">Báo cáo & Hóa đơn</h2>
+        </div>
+      </div>
+      
+      <div class="row mt-3">
+        <div class="col-md-6 col-lg-4 mb-4">
+          <div class="card h-100">
+            <div class="card-body">
+              <h5 class="card-title"><i class="fas fa-file-invoice-dollar me-2"></i>Hóa đơn bán hàng</h5>
+              <p class="card-text">Xem và quản lý danh sách hóa đơn bán hàng đã phát hành.</p>
+              <a href="/admin/invoices" class="btn btn-primary">Xem hóa đơn</a>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-md-6 col-lg-4 mb-4">
+          <div class="card h-100">
+            <div class="card-body">
+              <h5 class="card-title"><i class="fas fa-chart-line me-2"></i>Báo cáo doanh thu</h5>
+              <p class="card-text">Xem thống kê doanh thu theo ngày, tuần, tháng hoặc năm.</p>
+              <div class="d-flex gap-2">
+                <a href="/admin/reports/sales?period=day" class="btn btn-sm btn-outline-primary">Ngày</a>
+                <a href="/admin/reports/sales?period=week" class="btn btn-sm btn-outline-primary">Tuần</a>
+                <a href="/admin/reports/sales?period=month" class="btn btn-sm btn-outline-primary">Tháng</a>
+                <a href="/admin/reports/sales?period=year" class="btn btn-sm btn-outline-primary">Năm</a>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-md-6 col-lg-4 mb-4">
+          <div class="card h-100">
+            <div class="card-body">
+              <h5 class="card-title"><i class="fas fa-file-export me-2"></i>Xuất dữ liệu</h5>
+              <p class="card-text">Xuất báo cáo doanh thu và danh sách sản phẩm bán chạy dưới dạng CSV.</p>
+              <a href="/admin/reports/sales/export" class="btn btn-success">Xuất báo cáo</a>
+            </div>
+          </div>
+        </div>
       </div>
     </main>
   </div>

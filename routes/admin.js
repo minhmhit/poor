@@ -335,10 +335,20 @@ router.get('/categories/delete/:id', async (req, res) => {
 // Quản lý đơn hàng - danh sách
 router.get('/orders', async (req, res) => {
   try {
-    const orders = await orderModel.getAllOrders();
+    // Lấy các tham số lọc từ query string
+    const filters = {
+      status: req.query.status || '',
+      q: req.query.q || '',
+      date: req.query.date || ''
+    };
+    
+    // Lấy danh sách đơn hàng theo bộ lọc
+    const orders = await orderModel.getFilteredOrders(filters);
+    
     res.render('admin/orders', { 
       title: 'Quản lý đơn hàng',
-      orders
+      orders,
+      filters // Truyền lại các bộ lọc để hiển thị giá trị đã chọn
     });
   } catch (error) {
     console.error('Lỗi khi lấy danh sách đơn hàng:', error);
@@ -401,10 +411,21 @@ router.post('/orders/:id/update-status', async (req, res) => {
 // Quản lý người dùng - danh sách
 router.get('/users', async (req, res) => {
   try {
-    const users = await adminModel.getAllUsers();
+    // Lấy các tham số lọc từ query string
+    const filters = {
+      role: req.query.role || '',
+      q: req.query.q || '',
+      date: req.query.date || '',
+      status: req.query.status || ''
+    };
+    
+    // Lấy danh sách người dùng theo bộ lọc
+    const users = await adminModel.getFilteredUsers(filters);
+    
     res.render('admin/users', { 
       title: 'Quản lý người dùng',
       users,
+      filters, // Truyền lại các bộ lọc để hiển thị giá trị đã chọn
       messages: req.flash()
     });
   } catch (error) {
@@ -630,6 +651,255 @@ router.get('/users/:id/delete', async (req, res) => {
       title: 'Lỗi xóa người dùng',
       message: 'Không thể xóa người dùng' 
     });
+  }
+});
+
+// ============== QUẢN LÝ HÓA ĐƠN ==============
+// In hóa đơn bán hàng
+router.get('/orders/:id/print', async (req, res) => {
+  try {
+    const orderId = req.params.id;
+    const order = await orderModel.getOrderById(orderId);
+    
+    if (!order) {
+      return res.status(404).render('error', { 
+        title: 'Không tìm thấy',
+        message: 'Đơn hàng không tồn tại' 
+      });
+    }
+    
+    // Tạo phiên bản hóa đơn để in
+    const invoiceData = {
+      order_id: orderId,
+      content: JSON.stringify(order),
+      created_at: new Date(),
+      created_by: req.session.user.id
+    };
+    
+    // Lưu hóa đơn vào bảng invoices
+    await adminModel.saveInvoice(invoiceData);
+    
+    // Render trang in hóa đơn
+    res.render('admin/invoice-print', {
+      title: `In hóa đơn #${orderId}`,
+      order,
+      currentUser: req.session.user
+    });
+  } catch (error) {
+    console.error('Lỗi khi tạo hóa đơn:', error);
+    res.status(500).render('error', { 
+      title: 'Lỗi hệ thống',
+      message: 'Không thể tạo hóa đơn' 
+    });
+  }
+});
+
+// Danh sách hóa đơn đã lưu
+router.get('/invoices', async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    
+    // Xử lý lọc theo ngày
+    let startDate = req.query.start_date ? new Date(req.query.start_date) : null;
+    let endDate = req.query.end_date ? new Date(req.query.end_date) : null;
+    
+    // Nếu chỉ có start_date, thì lấy đến hiện tại
+    if (startDate && !endDate) {
+      endDate = new Date();
+    }
+    
+    // Nếu chỉ có end_date, thì lấy từ 30 ngày trước đó
+    if (!startDate && endDate) {
+      startDate = new Date(endDate);
+      startDate.setDate(startDate.getDate() - 30);
+    }
+    
+    // Nếu không có cả hai, lấy 30 ngày gần nhất
+    if (!startDate && !endDate) {
+      endDate = new Date();
+      startDate = new Date();
+      startDate.setDate(startDate.getDate() - 30);
+    }
+    
+    const invoices = await adminModel.getInvoices(startDate, endDate, page, limit);
+    const total = await adminModel.countInvoices(startDate, endDate);
+    
+    res.render('admin/invoices', {
+      title: 'Danh sách hóa đơn',
+      invoices,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit)
+      },
+      filters: {
+        start_date: startDate,
+        end_date: endDate
+      },
+      messages: req.flash()
+    });
+  } catch (error) {
+    console.error('Lỗi khi lấy danh sách hóa đơn:', error);
+    res.status(500).render('error', { 
+      title: 'Lỗi hệ thống',
+      message: 'Không thể lấy danh sách hóa đơn' 
+    });
+  }
+});
+
+// Xem chi tiết hóa đơn
+router.get('/invoices/:id', async (req, res) => {
+  try {
+    const invoiceId = req.params.id;
+    const invoice = await adminModel.getInvoiceById(invoiceId);
+    
+    if (!invoice) {
+      return res.status(404).render('error', { 
+        title: 'Không tìm thấy',
+        message: 'Hóa đơn không tồn tại' 
+      });
+    }
+    
+    // Parse nội dung từ JSON sang object
+    let orderData = {};
+    try {
+      orderData = JSON.parse(invoice.content);
+    } catch (e) {
+      console.error('Lỗi khi parse dữ liệu hóa đơn:', e);
+    }
+    
+    res.render('admin/invoice-detail', {
+      title: `Chi tiết hóa đơn #${invoiceId}`,
+      invoice,
+      order: orderData
+    });
+  } catch (error) {
+    console.error('Lỗi khi lấy chi tiết hóa đơn:', error);
+    res.status(500).render('error', { 
+      title: 'Lỗi hệ thống',
+      message: 'Không thể lấy chi tiết hóa đơn' 
+    });
+  }
+});
+
+// ============== BÁO CÁO THỐNG KÊ ==============
+// Thống kê doanh thu
+router.get('/reports/sales', async (req, res) => {
+  try {
+    // Xử lý tham số thời gian
+    const period = req.query.period || 'month'; // day, week, month, year
+    
+    let startDate = req.query.start_date ? new Date(req.query.start_date) : null;
+    let endDate = req.query.end_date ? new Date(req.query.end_date) : null;
+    
+    if (!startDate || !endDate) {
+      const today = new Date();
+      
+      if (period === 'day') {
+        // Thống kê trong ngày hiện tại
+        startDate = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0);
+        endDate = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59);
+      } else if (period === 'week') {
+        // Thống kê 7 ngày gần nhất
+        startDate = new Date();
+        startDate.setDate(today.getDate() - 7);
+        endDate = today;
+      } else if (period === 'month') {
+        // Thống kê tháng hiện tại
+        startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+        endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0, 23, 59, 59);
+      } else if (period === 'year') {
+        // Thống kê năm hiện tại
+        startDate = new Date(today.getFullYear(), 0, 1);
+        endDate = new Date(today.getFullYear(), 11, 31, 23, 59, 59);
+      }
+    }
+    
+    // Lấy dữ liệu thống kê
+    const salesStats = await adminModel.getSalesStats(startDate, endDate, period);
+    const topProducts = await adminModel.getTopSellingProducts(startDate, endDate, 10);
+    const topCustomers = await adminModel.getTopCustomers(startDate, endDate, 10);
+    
+    res.render('admin/sales-report', {
+      title: 'Báo cáo doanh thu',
+      period,
+      startDate,
+      endDate,
+      salesStats,
+      topProducts,
+      topCustomers
+    });
+  } catch (error) {
+    console.error('Lỗi khi tạo báo cáo doanh thu:', error);
+    res.status(500).render('error', { 
+      title: 'Lỗi hệ thống',
+      message: 'Không thể tạo báo cáo doanh thu' 
+    });
+  }
+});
+
+// Xuất báo cáo doanh thu
+router.get('/reports/sales/export', async (req, res) => {
+  try {
+    // Xử lý tham số thời gian giống như ở route xem báo cáo
+    const period = req.query.period || 'month';
+    
+    let startDate = req.query.start_date ? new Date(req.query.start_date) : null;
+    let endDate = req.query.end_date ? new Date(req.query.end_date) : null;
+    
+    if (!startDate || !endDate) {
+      const today = new Date();
+      
+      if (period === 'day') {
+        startDate = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0);
+        endDate = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59);
+      } else if (period === 'week') {
+        startDate = new Date();
+        startDate.setDate(today.getDate() - 7);
+        endDate = today;
+      } else if (period === 'month') {
+        startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+        endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0, 23, 59, 59);
+      } else if (period === 'year') {
+        startDate = new Date(today.getFullYear(), 0, 1);
+        endDate = new Date(today.getFullYear(), 11, 31, 23, 59, 59);
+      }
+    }
+    
+    // Lấy dữ liệu thống kê
+    const salesStats = await adminModel.getSalesStats(startDate, endDate, period);
+    const topProducts = await adminModel.getTopSellingProducts(startDate, endDate, 10);
+    
+    // Tên file xuất ra
+    const fileName = `sales-report-${period}-${startDate.toISOString().slice(0, 10)}-to-${endDate.toISOString().slice(0, 10)}.csv`;
+    
+    // Thiết lập header cho CSV file
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+    
+    // Tạo nội dung CSV
+    let csvContent = 'Ngày,Số đơn hàng,Doanh thu,Lợi nhuận\n';
+    
+    // Thêm dữ liệu thống kê theo ngày vào CSV
+    salesStats.byDate.forEach(stat => {
+      csvContent += `${stat.date},${stat.orderCount},${stat.revenue},${stat.profit}\n`;
+    });
+    
+    // Thêm dòng trống và tiêu đề cho phần sản phẩm bán chạy
+    csvContent += '\nSản phẩm bán chạy\nTên sản phẩm,Số lượng bán,Doanh thu\n';
+    
+    // Thêm dữ liệu sản phẩm bán chạy vào CSV
+    topProducts.forEach(product => {
+      csvContent += `${product.name},${product.quantity},${product.revenue}\n`;
+    });
+    
+    // Gửi nội dung CSV
+    res.send(csvContent);
+  } catch (error) {
+    console.error('Lỗi khi xuất báo cáo doanh thu:', error);
+    res.status(500).json({ error: 'Không thể xuất báo cáo doanh thu' });
   }
 });
 
