@@ -36,52 +36,50 @@ const upload = multer({
   }
 });
 
-// Middleware kiểm tra quyền admin
-const isAdmin = (req, res, next) => {
-  if (req.session && req.session.user && req.session.user.role === 'admin') {
-    // Nếu là admin, cho phép truy cập
-    next();
-  } else {
-    // Không phải admin, chuyển hướng về trang đăng nhập
-    req.flash('error', 'Bạn không có quyền truy cập trang quản trị');
-    res.redirect('/auth/login');
+// Tạo middleware riêng để kiểm tra đăng nhập cho admin
+const isAdminAuthenticated = (req, res, next) => {
+  if (req.session && req.session.user) {
+    return next();
   }
+  return res.redirect('/admin/login');
 };
 
-// Middleware kiểm tra quyền manager
-const isManager = (req, res, next) => {
-  if (req.session && req.session.user && req.session.user.role === 'manager') {
+// Áp dụng middleware cho tất cả các route admin trừ route login
+router.use((req, res, next) => {
+  if (req.path === '/login' || req.path === '/logout') {
+    return next();
+  }
+  isAdminAuthenticated(req, res, next);
+});
+
+// Kiểm tra người dùng có quyền admin HOẶC manager
+const isAdminOrManager = (req, res, next) => {
+  if (req.session.user && (req.session.user.role === 'admin' || req.session.user.role === 'manager')) {
     next();
   } else {
-    req.flash('error', 'Bạn không có quyền truy cập trang quản trị');
-    res.redirect('/auth/login');
+    req.flash('error', 'Bạn không có quyền truy cập trang này');
+    res.redirect('/admin/login');
   }
 };
-
-// Middleware kiểm tra quyền sale
-const isSale = (req, res, next) => {
-  if (req.session && req.session.user && req.session.user.role === 'sale') {
+// Kiểm tra người dùng có quyền admin HOẶC sale
+const isAdminOrSale = (req, res, next) => {
+  if (req.session.user && (req.session.user.role === 'admin' || req.session.user.role === 'sale')) {
     next();
   } else {
-    req.flash('error', 'Bạn không có quyền truy cập trang quản trị');
-    res.redirect('/auth/login');
+    req.flash('error', 'Bạn không có quyền truy cập trang này');
+    res.redirect('/admin/login');
   }
-};
-// Middleware kiểm tra quyền warehouse
-const isWarehouse = (req, res, next) => {
-  if (req.session && req.session.user && req.session.user.role === 'warehouse') {
+};  
+
+// Kiểm tra người dùng có quyền admin HOẶC warehouse
+const isAdminOrWarehouse = (req, res, next) => {
+  if (req.session.user && (req.session.user.role === 'admin' || req.session.user.role === 'warehouse')) {
     next();
   } else {
-    req.flash('error', 'Bạn không có quyền truy cập trang quản trị');
-    res.redirect('/auth/login');
+    req.flash('error', 'Bạn không có quyền truy cập trang này');
+    res.redirect('/admin/login');
   }
-};
-
-// Áp dụng middleware cho tất cả các route admin
-router.use(isLoggedIn);
-router.use(isAdmin);
-
-
+}; 
 // Trang quản trị chính
 router.get('/', async (req, res) => {
   try {
@@ -108,6 +106,8 @@ router.get('/', async (req, res) => {
 
 // ============== QUẢN LÝ SẢN PHẨM ==============
 // chỉ cho phép manager và admin truy cập
+// Áp dụng cho tất cả các tuyến đường bắt đầu bằng '/products'
+  router.use('/products', isAdminOrWarehouse);
 // Quản lý sản phẩm - danh sách
 router.get('/products', async (req, res) => {
   try {
@@ -251,6 +251,9 @@ router.get('/products/delete/:id', async (req, res) => {
 
 // ============== QUẢN LÝ DANH MỤC ==============
 // Quản lý danh mục - danh sách
+// chỉ cho phép warehouse và admin truy cập
+// Áp dụng cho tất cả các tuyến đường bắt đầu bằng '/categories'
+router.use('/categories', isAdminOrWarehouse);
 router.get('/categories', async (req, res) => {
   try {
     const categories = await categoryModel.getAllCategories();
@@ -366,6 +369,9 @@ router.get('/categories/delete/:id', async (req, res) => {
 
 // ============== QUẢN LÝ ĐƠN HÀNG ==============
 // Quản lý đơn hàng - danh sách
+// chỉ cho phép sale và admin truy cập
+// Áp dụng cho tất cả các tuyến đường bắt đầu bằng '/orders'
+router.use('/orders', isAdminOrSale);
 router.get('/orders', async (req, res) => {
   try {
     // Lấy các tham số lọc từ query string
@@ -442,6 +448,9 @@ router.post('/orders/:id/update-status', async (req, res) => {
 
 // ============== QUẢN LÝ NGƯỜI DÙNG ==============
 // Quản lý người dùng - danh sách
+// chỉ cho phép manager và admin truy cập
+// Áp dụng cho tất cả các tuyến đường bắt đầu bằng '/users'
+router.use('/users', isAdminOrManager);
 router.get('/users', async (req, res) => {
   try {
     // Lấy các tham số lọc từ query string
@@ -689,6 +698,9 @@ router.get('/users/:id/delete', async (req, res) => {
 
 // ============== QUẢN LÝ HÓA ĐƠN ==============
 // In hóa đơn bán hàng
+// chỉ cho phép sale và admin truy cập
+// Áp dụng cho tất cả các tuyến đường bắt đầu bằng '/orders'
+// router.use('/orders', isAdminOrSale);
 router.get('/orders/:id/print', async (req, res) => {
   try {
     const orderId = req.params.id;
@@ -728,7 +740,7 @@ router.get('/orders/:id/print', async (req, res) => {
 });
 
 // Danh sách hóa đơn đã lưu
-router.get('/invoices', async (req, res) => {
+router.get('/invoices', isAdminOrSale, async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
@@ -783,7 +795,7 @@ router.get('/invoices', async (req, res) => {
 });
 
 // Xem chi tiết hóa đơn
-router.get('/invoices/:id', async (req, res) => {
+router.get('/invoices/:id', isAdminOrSale, async (req, res) => {
   try {
     const invoiceId = req.params.id;
     const invoice = await adminModel.getInvoiceById(invoiceId);
@@ -819,7 +831,8 @@ router.get('/invoices/:id', async (req, res) => {
 
 // ============== BÁO CÁO THỐNG KÊ ==============
 // Thống kê doanh thu
-router.get('/reports/sales', async (req, res) => {
+
+router.get('/reports/sales',isAdminOrSale, async (req, res) => {
   try {
     // Xử lý tham số thời gian
     const period = req.query.period || 'month'; // day, week, month, year
@@ -938,6 +951,9 @@ router.get('/reports/sales/export', async (req, res) => {
 
 // ============== QUẢN LÝ NHÀ CUNG CẤP ==============
 // Danh sách nhà cung cấp
+// chỉ cho phép warehouse và admin truy cập
+// Áp dụng cho tất cả các tuyến đường bắt đầu bằng '/suppliers'
+router.use('/suppliers', isAdminOrWarehouse);
 router.get('/suppliers', async (req, res) => {
   try {
     // Lấy các tham số lọc từ query string
@@ -1093,6 +1109,9 @@ router.get('/suppliers/:id', async (req, res) => {
 
 // ============== QUẢN LÝ NHẬP KHO ==============
 // Danh sách phiếu nhập kho
+// chỉ cho phép warehouse và admin truy cập
+// Áp dụng cho tất cả các tuyến đường bắt đầu bằng '/stock'
+router.use('/stock', isAdminOrWarehouse);
 router.get('/stock/imports', async (req, res) => {
   try {
     // Lấy các tham số lọc từ query string

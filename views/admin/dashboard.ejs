@@ -15,42 +15,62 @@
               Dashboard
             </a>
           </li>
+          <!-- chỉ hiển thị khi là admin hoặc warehouse-->
+          <% if (user.role === 'admin' || user.role === 'warehouse') { %>
           <li class="nav-item">
             <a class="nav-link" href="/admin/products">
               <i class="fas fa-box me-2"></i>
               Sản phẩm
             </a>
           </li>
+          <% } %>
+          <!-- chỉ hiển thị khi là admin hoặc sale-->
+          <% if (user.role === 'admin' || user.role === 'sale') { %>
           <li class="nav-item">
             <a class="nav-link" href="/admin/categories">
               <i class="fas fa-tags me-2"></i>
               Danh mục
             </a>
           </li>
+          <% } %>
+          <!-- chỉ hiển thị khi là admin hoặc sale-->
+          <% if (user.role === 'admin' || user.role === 'sale') { %>
           <li class="nav-item">
             <a class="nav-link" href="/admin/orders">
               <i class="fas fa-shopping-cart me-2"></i>
               Đơn hàng
             </a>
           </li>
+          <% } %>
+          <!-- chỉ hiển thị khi là admin hoặc manager-->
+          <% if (user.role === 'admin' || user.role === 'manager') { %>
           <li class="nav-item">
             <a class="nav-link" href="/admin/users">
               <i class="fas fa-users me-2"></i>
               Người dùng
             </a>
           </li>
+          <% } %>
+          <!-- chỉ hiển thị khi là admin hoặc warehouse-->
+          <% if (user.role === 'admin' || user.role === 'warehouse') { %>
           <li class="nav-item">
             <a class="nav-link" href="/admin/suppliers">
               <i class="fas fa-truck me-2"></i>
               Nhà cung cấp
             </a>
           </li>
+          <% } %>
+          <!-- chỉ hiển thị khi là admin hoặc warehouse-->
+          <% if (user.role === 'admin' || user.role === 'warehouse') { %>
           <li class="nav-item">
             <a class="nav-link" href="/admin/stock/imports">
               <i class="fas fa-warehouse me-2"></i>
               Nhập kho
             </a>
           </li>
+          <% } %>
+          <!-- chỉ hiển thị khi là admin hoặc sale-->
+          <% if (user.role === 'admin' || user.role === 'sale') { %>
           <li class="nav-item">
             <a class="nav-link" href="/admin/invoices">
               <i class="fas fa-file-invoice-dollar me-2"></i>
@@ -63,6 +83,7 @@
               Báo cáo doanh thu
             </a>
           </li>
+          <% } %>
         </ul>
       </div>
     </div>
