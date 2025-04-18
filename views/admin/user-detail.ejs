@@ -47,9 +47,14 @@
     <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
       <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
         <h1 class="h2">Thông tin người dùng: <%= user.name %></h1>
-        <a href="/admin/users" class="btn btn-secondary">
-          <i class="fas fa-arrow-left me-1"></i> Quay lại
-        </a>
+        <div class="btn-toolbar mb-2 mb-md-0">
+          <a href="/admin/users/<%= user.id %>/edit" class="btn btn-sm btn-primary me-2">
+            <i class="fas fa-edit me-1"></i> Chỉnh sửa
+          </a>
+          <a href="/admin/users" class="btn btn-sm btn-secondary">
+            <i class="fas fa-arrow-left me-1"></i> Quay lại
+          </a>
+        </div>
       </div>
 
       <div class="row mb-4">
@@ -77,30 +82,38 @@
                   <span class="badge bg-success">Khách hàng</span>
                 <% } %>
               </p>
+              <p>
+                <strong>Trạng thái:</strong>
+                <% if (user.status === 'active') { %>
+                  <span class="badge bg-success">Hoạt động</span>
+                <% } else { %>
+                  <span class="badge bg-danger">Vô hiệu hóa</span>
+                <% } %>
+              </p>
               <p><strong>Ngày đăng ký:</strong> <%= new Date(user.created_at).toLocaleString('vi-VN') %></p>
             </div>
           </div>
           
-          <!-- Cập nhật quyền -->
-          <!-- <div class="card mb-4">
+          <!-- Cập nhật trạng thái -->
+          <div class="card mb-4">
             <div class="card-header">
-              <h5 class="card-title mb-0">Cập nhật quyền</h5>
+              <h5 class="card-title mb-0">Cập nhật trạng thái tài khoản</h5>
             </div>
             <div class="card-body">
-              <form action="/admin/users/<%= user.id %>/update-role" method="POST">
+              <form action="/admin/users/<%= user.id %>/update-status" method="POST">
                 <div class="mb-3">
-                  <label for="role" class="form-label">Quyền</label>
-                  <select class="form-select" id="role" name="role" required>
-                    <option value="customer" <%= user.role === 'customer' ? 'selected' : '' %>>Khách hàng</option>
-                    <option value="admin" <%= user.role === 'admin' ? 'selected' : '' %>>Quản trị viên</option>
+                  <label for="status" class="form-label">Trạng thái</label>
+                  <select class="form-select" id="status" name="status" required>
+                    <option value="active" <%= user.status === 'active' ? 'selected' : '' %>>Hoạt động</option>
+                    <option value="inactive" <%= user.status === 'inactive' ? 'selected' : '' %>>Vô hiệu hóa</option>
                   </select>
                 </div>
                 <div class="d-grid">
-                  <button type="submit" class="btn btn-primary">Cập nhật quyền</button>
+                  <button type="submit" class="btn btn-primary">Cập nhật trạng thái</button>
                 </div>
               </form>
             </div>
-          </div> -->
+          </div>
         </div>
 
         <!-- Thông tin khách hàng -->

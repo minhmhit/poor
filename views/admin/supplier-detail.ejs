@@ -1,0 +1,192 @@
+<%- include('../partials/admin-header') %>
+
+<div class="container-fluid">
+  <div class="row">
+    <!-- Main content -->
+    <main class="col-md-12">
+      <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2"><%= title %></h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+          <a href="/admin/suppliers/edit/<%= supplier.id %>" class="btn btn-primary me-2">
+            <i class="fas fa-edit me-1"></i> Chỉnh sửa
+          </a>
+          <button type="button" class="btn btn-danger me-2" data-bs-toggle="modal" data-bs-target="#deleteModal">
+            <i class="fas fa-trash me-1"></i> Xóa
+          </button>
+          <a href="/admin/suppliers" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-1"></i> Quay lại
+          </a>
+        </div>
+      </div>
+
+      <!-- Thông tin nhà cung cấp -->
+      <div class="row mb-4">
+        <div class="col-md-6">
+          <div class="card shadow mb-4">
+            <div class="card-header py-3">
+              <h6 class="m-0 font-weight-bold text-primary">Thông tin nhà cung cấp</h6>
+            </div>
+            <div class="card-body">
+              <div class="mb-3 row">
+                <label class="col-sm-4 col-form-label fw-bold">Mã nhà cung cấp:</label>
+                <div class="col-sm-8">
+                  <p class="form-control-plaintext">#<%= supplier.id %></p>
+                </div>
+              </div>
+              <div class="mb-3 row">
+                <label class="col-sm-4 col-form-label fw-bold">Tên nhà cung cấp:</label>
+                <div class="col-sm-8">
+                  <p class="form-control-plaintext"><%= supplier.name %></p>
+                </div>
+              </div>
+              <div class="mb-3 row">
+                <label class="col-sm-4 col-form-label fw-bold">Người liên hệ:</label>
+                <div class="col-sm-8">
+                  <p class="form-control-plaintext"><%= supplier.contact_person || 'Chưa cung cấp' %></p>
+                </div>
+              </div>
+              <div class="mb-3 row">
+                <label class="col-sm-4 col-form-label fw-bold">Email:</label>
+                <div class="col-sm-8">
+                  <p class="form-control-plaintext">
+                    <% if (supplier.email) { %>
+                      <a href="mailto:<%= supplier.email %>"><%= supplier.email %></a>
+                    <% } else { %>
+                      Chưa cung cấp
+                    <% } %>
+                  </p>
+                </div>
+              </div>
+              <div class="mb-3 row">
+                <label class="col-sm-4 col-form-label fw-bold">Số điện thoại:</label>
+                <div class="col-sm-8">
+                  <p class="form-control-plaintext">
+                    <% if (supplier.phone) { %>
+                      <a href="tel:<%= supplier.phone %>"><%= supplier.phone %></a>
+                    <% } else { %>
+                      Chưa cung cấp
+                    <% } %>
+                  </p>
+                </div>
+              </div>
+              <div class="mb-3 row">
+                <label class="col-sm-4 col-form-label fw-bold">Địa chỉ:</label>
+                <div class="col-sm-8">
+                  <p class="form-control-plaintext"><%= supplier.address || 'Chưa cung cấp' %></p>
+                </div>
+              </div>
+              <div class="mb-3 row">
+                <label class="col-sm-4 col-form-label fw-bold">Trạng thái:</label>
+                <div class="col-sm-8">
+                  <% if (supplier.status === 'active') { %>
+                    <span class="badge bg-success">Đang hoạt động</span>
+                  <% } else { %>
+                    <span class="badge bg-secondary">Ngừng hoạt động</span>
+                  <% } %>
+                </div>
+              </div>
+              <% if (supplier.description) { %>
+              <div class="mb-3 row">
+                <label class="col-sm-4 col-form-label fw-bold">Mô tả:</label>
+                <div class="col-sm-8">
+                  <p class="form-control-plaintext"><%= supplier.description %></p>
+                </div>
+              </div>
+              <% } %>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="card shadow mb-4">
+            <div class="card-header py-3">
+              <h6 class="m-0 font-weight-bold text-primary">Thống kê</h6>
+            </div>
+            <div class="card-body">
+              <div class="mb-3 row">
+                <label class="col-sm-6 col-form-label fw-bold">Tổng số phiếu nhập:</label>
+                <div class="col-sm-6">
+                  <p class="form-control-plaintext"><%= imports ? imports.length : 0 %></p>
+                </div>
+              </div>
+              <!-- Thêm các thống kê khác nếu cần -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Danh sách phiếu nhập -->
+      <div class="card shadow mb-4">
+        <div class="card-header py-3">
+          <h6 class="m-0 font-weight-bold text-primary">Lịch sử nhập hàng</h6>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-bordered" width="100%" cellspacing="0">
+              <thead>
+                <tr>
+                  <th>Mã phiếu</th>
+                  <th>Ngày nhập</th>
+                  <th>Tổng giá trị</th>
+                  <th>Thanh toán</th>
+                  <th>Thao tác</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% if (imports && imports.length > 0) { %>
+                  <% imports.forEach(item => { %>
+                    <tr>
+                      <td><%= item.import_code %></td>
+                      <td><%= new Date(item.import_date).toLocaleDateString('vi-VN') %></td>
+                      <td><%= item.total_value ? item.total_value.toLocaleString('vi-VN') + ' đ' : 'Không có' %></td>
+                      <td>
+                        <% if (item.payment_status === 'completed') { %>
+                          <span class="badge bg-success">Đã thanh toán</span>
+                        <% } else if (item.payment_status === 'partial') { %>
+                          <span class="badge bg-warning">Một phần</span>
+                        <% } else { %>
+                          <span class="badge bg-danger">Chưa thanh toán</span>
+                        <% } %>
+                      </td>
+                      <td>
+                        <a href="/admin/stock/imports/<%= item.id %>" class="btn btn-sm btn-info">
+                          <i class="fas fa-eye"></i>
+                        </a>
+                      </td>
+                    </tr>
+                  <% }) %>
+                <% } else { %>
+                  <tr>
+                    <td colspan="5" class="text-center">Chưa có phiếu nhập nào</td>
+                  </tr>
+                <% } %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- Modal xác nhận xóa -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deleteModalLabel">Xác nhận xóa</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>Bạn có chắc chắn muốn xóa nhà cung cấp <strong><%= supplier.name %></strong>?</p>
+        <p class="text-danger">Lưu ý: Không thể xóa nhà cung cấp đã có phiếu nhập kho liên quan.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+        <a href="/admin/suppliers/delete/<%= supplier.id %>" class="btn btn-danger">Xóa</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/admin-footer') %> 

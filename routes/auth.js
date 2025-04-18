@@ -47,6 +47,12 @@ router.post('/login', isNotLoggedIn, async (req, res) => {
       return res.redirect('/auth/login');
     }
     
+    // Kiểm tra trạng thái người dùng
+    if (result.user.status !== 'active') {
+      req.flash('error', 'Tài khoản của bạn đã bị vô hiệu hóa');
+      return res.redirect('/auth/login');
+    }
+    
     // Lưu thông tin người dùng vào session
     req.session.user = result.user;
     
@@ -108,7 +114,8 @@ router.post('/register', isNotLoggedIn, async (req, res) => {
       email,
       password,
       phone: req.body.phone || null,
-      address: req.body.address || null
+      address: req.body.address || null,
+      status: 'active'
     });
     
     req.flash('success', 'Đăng ký thành công, vui lòng đăng nhập');

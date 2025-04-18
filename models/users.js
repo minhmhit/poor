@@ -18,9 +18,9 @@ const userModel = {
       
       // Thêm người dùng vào bảng users
       const [userResult] = await connection.query(`
-        INSERT INTO users (name, email, password, role)
-        VALUES (?, ?, ?, ?)
-      `, [userData.name, userData.email, hashedPassword, userRole]);
+        INSERT INTO users (name, email, password, role, status)
+        VALUES (?, ?, ?, ?, ?)
+      `, [userData.name, userData.email, hashedPassword, userRole, 'active']);
       
       const userId = userResult.insertId;
       

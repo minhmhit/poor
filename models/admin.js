@@ -236,13 +236,13 @@ const adminModel = {
   // Cập nhật thông tin tài khoản
   updateUserInfo: async (id, userData) => {
     try {
-      const { name, email, phone, address } = userData;
+      const { name, email } = userData;
       
       const [result] = await pool.query(`
         UPDATE users 
-        SET name = ?, email = ?, phone = ?, address = ?, updated_at = NOW()
-        WHERE id = ?
-      `, [name, email, phone, address, id]);
+        SET name = ?, email = ? 
+        WHERE users.id = ?
+      `, [name, email, id]);
       
       return result.affectedRows > 0;
     } catch (error) {
@@ -258,7 +258,7 @@ const adminModel = {
       const permissionsJSON = JSON.stringify(permissions);
       
       const [result] = await pool.query(`
-        UPDATE users SET permissions = ? WHERE id = ?
+        UPDATE users SET role = ? WHERE id = ?
       `, [permissionsJSON, id]);
       
       return result.affectedRows > 0;

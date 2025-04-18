@@ -1,0 +1,105 @@
+<%- include('../partials/admin-header') %>
+
+<div class="container-fluid">
+  <div class="row">
+    <!-- Main content -->
+    <main class="col-md-12">
+      <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2"><%= title %></h1>
+        <a href="/admin/suppliers" class="btn btn-secondary">
+          <i class="fas fa-arrow-left me-1"></i> Quay lại danh sách
+        </a>
+      </div>
+
+      <div class="card shadow mb-4">
+        <div class="card-header py-3">
+          <h6 class="m-0 font-weight-bold text-primary">
+            <%= mode === 'add' ? 'Thêm nhà cung cấp mới' : 'Chỉnh sửa thông tin nhà cung cấp' %>
+          </h6>
+        </div>
+        <div class="card-body">
+          <form action="<%= mode === 'add' ? '/admin/suppliers/add' : '/admin/suppliers/edit/' + supplier.supplier_id %>" method="POST" class="needs-validation" novalidate>
+            <!-- Thông tin cơ bản -->
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <label for="name" class="form-label">Tên nhà cung cấp <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="name" name="name" value="<%= supplier.name || '' %>" required>
+                <div class="invalid-feedback">
+                  Vui lòng nhập tên nhà cung cấp
+                </div>
+              </div>
+              <div class="col-md-6">
+                <label for="contact_person" class="form-label">Người liên hệ</label>
+                <input type="text" class="form-control" id="contact_person" name="contact_person" value="<%= supplier.contact_person || '' %>">
+              </div>
+            </div>
+
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <label for="email" class="form-label">Email</label>
+                <input type="email" class="form-control" id="email" name="email" value="<%= supplier.email || '' %>">
+                <div class="invalid-feedback">
+                  Vui lòng nhập email hợp lệ
+                </div>
+              </div>
+              <div class="col-md-6">
+                <label for="phone" class="form-label">Số điện thoại</label>
+                <input type="text" class="form-control" id="phone" name="phone" value="<%= supplier.phone || '' %>">
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label for="address" class="form-label">Địa chỉ</label>
+              <input type="text" class="form-control" id="address" name="address" value="<%= supplier.address || '' %>">
+            </div>
+
+            <div class="mb-3">
+              <label for="description" class="form-label">Mô tả</label>
+              <textarea class="form-control" id="description" name="description" rows="3"><%= supplier.description || '' %></textarea>
+            </div>
+
+            <div class="mb-3">
+              <label for="status" class="form-label">Trạng thái</label>
+              <select class="form-select" id="status" name="status">
+                <option value="active" <%= (supplier.status === 'active' || !supplier.status) ? 'selected' : '' %>>Đang hoạt động</option>
+                <option value="inactive" <%= supplier.status === 'inactive' ? 'selected' : '' %>>Ngừng hoạt động</option>
+              </select>
+            </div>
+
+            <div class="d-flex justify-content-between mt-4">
+              <a href="/admin/suppliers" class="btn btn-secondary">Hủy</a>
+              <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save me-1"></i> <%= mode === 'add' ? 'Thêm nhà cung cấp' : 'Lưu thay đổi' %>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script>
+  // Xác thực form
+  (function() {
+    'use strict'
+    
+    // Lấy tất cả các form cần validate
+    var forms = document.querySelectorAll('.needs-validation')
+    
+    // Lặp qua từng form và ngăn chặn gửi nếu không hợp lệ
+    Array.prototype.slice.call(forms)
+      .forEach(function (form) {
+        form.addEventListener('submit', function (event) {
+          if (!form.checkValidity()) {
+            event.preventDefault()
+            event.stopPropagation()
+          }
+          
+          form.classList.add('was-validated')
+        }, false)
+      })
+  })()
+</script>
+
+<%- include('../partials/admin-footer') %> 
