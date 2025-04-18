@@ -25,7 +25,7 @@
           </li>
           <% } %>
           <!-- chỉ hiển thị khi là admin hoặc sale-->
-          <% if (user.role === 'admin' || user.role === 'sale') { %>
+          <% if (user.role === 'admin' || user.role === 'warehouse') { %>
           <li class="nav-item">
             <a class="nav-link" href="/admin/categories">
               <i class="fas fa-tags me-2"></i>

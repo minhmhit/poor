@@ -40,6 +40,7 @@ const upload = multer({
 const isNotCustomer = (req, res, next) => {
   if (req.session.user && req.session.user.role !== 'customer') {
     next();
+    
   } else {
     req.flash('error', 'Bạn không có quyền truy cập trang quản trị');
     res.redirect('/auth/login');
@@ -51,6 +52,7 @@ const isAdminAuthenticated = (req, res, next) => {
   if (req.session && req.session.user) {
     // Đã đăng nhập, kiểm tra xem có phải customer không
     if (req.session.user.role !== 'customer') {
+      
       return next();
     } else {
       req.flash('error', 'Bạn không có quyền truy cập trang quản trị');
@@ -58,7 +60,7 @@ const isAdminAuthenticated = (req, res, next) => {
     }
   }
   // Chưa đăng nhập
-  return res.redirect('/admin/login');
+  return res.redirect('/auth/login');
 };
 
 // Áp dụng middleware cho tất cả các route admin trừ route login
@@ -75,7 +77,7 @@ const isAdminOrManager = (req, res, next) => {
     next();
   } else {
     req.flash('error', 'Bạn không có quyền truy cập trang này');
-    res.redirect('/admin/login');
+    res.redirect('/auth/login');
   }
 };
 // Kiểm tra người dùng có quyền admin HOẶC sale
@@ -84,7 +86,7 @@ const isAdminOrSale = (req, res, next) => {
     next();
   } else {
     req.flash('error', 'Bạn không có quyền truy cập trang này');
-    res.redirect('/admin/login');
+    res.redirect('/auth/login');
   }
 };  
 
@@ -94,9 +96,12 @@ const isAdminOrWarehouse = (req, res, next) => {
     next();
   } else {
     req.flash('error', 'Bạn không có quyền truy cập trang này');
-    res.redirect('/admin/login');
+    res.redirect('/auth/login');
   }
 }; 
+// Nếu không phải là customer thì chuyển hướng đến trang admin/
+
+
 // Trang quản trị chính
 router.get('/', async (req, res) => {
   try {
@@ -120,6 +125,8 @@ router.get('/', async (req, res) => {
     });
   }
 });
+
+
 
 // ============== QUẢN LÝ SẢN PHẨM ==============
 // chỉ cho phép manager và admin truy cập
