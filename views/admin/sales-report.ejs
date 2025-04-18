@@ -155,15 +155,15 @@
                 </div>
               </div>
             </div>
-            <div class="col-xl-3 col-md-6">
+            <!-- <div class="col-xl-3 col-md-6">
               <div class="card bg-info text-white mb-4">
                 <div class="card-body">
                   <h5 class="card-title">Tổng lợi nhuận</h5>
                   <h2 class="display-7"><%= parseInt(salesStats.total.profit || 0).toLocaleString('vi-VN') %> đ</h2>
                 </div>
               </div>
-            </div>
-            <div class="col-xl-3 col-md-6">
+            </div> -->
+            <!-- <div class="col-xl-3 col-md-6">
               <div class="card bg-warning text-white mb-4">
                 <div class="card-body">
                   <h5 class="card-title">Tỷ suất lợi nhuận</h5>
@@ -172,13 +172,13 @@
                   </h2>
                 </div>
               </div>
-            </div>
+            </div> -->
           </div>
         </div>
       </div>
       
       <!-- Biểu đồ doanh thu -->
-      <div class="card mb-4">
+      <!-- <div class="card mb-4">
         <div class="card-header">
           <i class="fas fa-chart-bar me-1"></i>
           Biểu đồ doanh thu
@@ -186,7 +186,7 @@
         <div class="card-body">
           <canvas id="revenueChart" width="100%" height="40"></canvas>
         </div>
-      </div>
+      </div> -->
       
       <!-- Doanh thu chi tiết -->
       <div class="row">
@@ -204,7 +204,7 @@
                       <th>Ngày</th>
                       <th class="text-center">Đơn hàng</th>
                       <th class="text-end">Doanh thu</th>
-                      <th class="text-end">Lợi nhuận</th>
+                      <!-- <th class="text-end">Lợi nhuận</th> -->
                     </tr>
                   </thead>
                   <tbody>
@@ -213,8 +213,8 @@
                         <tr>
                           <td><%= stat.date %></td>
                           <td class="text-center"><%= stat.order_count %></td>
-                          <td class="text-end"><%= stat.revenue.toLocaleString('vi-VN') %> đ</td>
-                          <td class="text-end"><%= stat.profit.toLocaleString('vi-VN') %> đ</td>
+                          <td class="text-end"><%= parseInt(stat.revenue).toLocaleString('vi-VN') %> đ</td>
+                          <!-- <td class="text-end"><%= stat.profit.toLocaleString('vi-VN') %> đ</td> -->
                         </tr>
                       <% }) %>
                     <% } else { %>
@@ -243,7 +243,7 @@
                       <th>Sản phẩm</th>
                       <th class="text-center">Số lượng</th>
                       <th class="text-end">Doanh thu</th>
-                      <th class="text-end">Lợi nhuận</th>
+                      <!-- <th class="text-end">Lợi nhuận</th> -->
                     </tr>
                   </thead>
                   <tbody>
@@ -252,8 +252,8 @@
                         <tr>
                           <td><%= product.name %></td>
                           <td class="text-center"><%= product.quantity %></td>
-                          <td class="text-end"><%= product.revenue.toLocaleString('vi-VN') %> đ</td>
-                          <td class="text-end"><%= product.profit.toLocaleString('vi-VN') %> đ</td>
+                          <td class="text-end"><%= parseInt(product.revenue).toLocaleString('vi-VN') %> đ</td>
+                          <!-- <td class="text-end"><%= product.profit.toLocaleString('vi-VN') %> đ</td> -->
                         </tr>
                       <% }) %>
                     <% } else { %>
@@ -295,7 +295,7 @@
                       <td><%= customer.name %></td>
                       <td><%= customer.email %></td>
                       <td class="text-center"><%= customer.order_count %></td>
-                      <td class="text-end"><%= customer.total_spent.toLocaleString('vi-VN') %> đ</td>
+                      <td class="text-end"><%= parseInt(customer.total_spent).toLocaleString('vi-VN') %> đ</td>
                     </tr>
                   <% }) %>
                 <% } else { %>
