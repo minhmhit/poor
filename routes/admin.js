@@ -737,6 +737,15 @@ router.get('/orders/:id/print', async (req, res) => {
       });
     }
     
+    // Kiểm tra trạng thái đơn hàng, chỉ cho phép in nếu đã hoàn thành
+    if (order.status !== 'completed') {
+      return res.status(403).render('error', { 
+        title: 'Không thể in hóa đơn',
+        message: 'Chỉ có thể in hóa đơn cho đơn hàng đã hoàn thành',
+        back: `/admin/orders/${orderId}`
+      });
+    }
+    
     // Tạo phiên bản hóa đơn để in
     const invoiceData = {
       order_id: orderId,
@@ -1148,6 +1157,7 @@ router.get('/stock/imports', async (req, res) => {
       month: req.query.month || '',
       year: req.query.year || ''
     };
+    
     
     // Lấy danh sách nhà cung cấp cho dropdown
     const suppliers = await supplierModel.getAllSuppliers();
