@@ -35,12 +35,29 @@ const upload = multer({
     cb(new Error('Chỉ chấp nhận file hình ảnh có định dạng: ' + filetypes));
   }
 });
+// ============== QUẢN LÝ ĐĂNG NHẬP ==============
+// kiểm tra không phải quyền customer
+const isNotCustomer = (req, res, next) => {
+  if (req.session.user && req.session.user.role !== 'customer') {
+    next();
+  } else {
+    req.flash('error', 'Bạn không có quyền truy cập trang quản trị');
+    res.redirect('/auth/login');
+  }
+};
 
 // Tạo middleware riêng để kiểm tra đăng nhập cho admin
 const isAdminAuthenticated = (req, res, next) => {
   if (req.session && req.session.user) {
-    return next();
+    // Đã đăng nhập, kiểm tra xem có phải customer không
+    if (req.session.user.role !== 'customer') {
+      return next();
+    } else {
+      req.flash('error', 'Bạn không có quyền truy cập trang quản trị');
+      return res.redirect('/');
+    }
   }
+  // Chưa đăng nhập
   return res.redirect('/admin/login');
 };
 

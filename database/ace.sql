@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Máy chủ: 127.0.0.1:3306
--- Thời gian đã tạo: Th4 17, 2025 lúc 06:02 PM
+-- Thời gian đã tạo: Th4 17, 2025 lúc 08:39 PM
 -- Phiên bản máy phục vụ: 10.4.32-MariaDB
 -- Phiên bản PHP: 8.2.12
 
@@ -67,6 +67,38 @@ CREATE TABLE `customers` (
 -- --------------------------------------------------------
 
 --
+-- Cấu trúc bảng cho bảng `invoices`
+--
+
+CREATE TABLE `invoices` (
+  `id` int(11) NOT NULL,
+  `order_id` int(11) NOT NULL,
+  `content` text NOT NULL COMMENT 'Lưu nội dung đơn hàng dưới dạng JSON',
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
+  `created_by` int(11) NOT NULL COMMENT 'ID người tạo hóa đơn',
+  `notes` text DEFAULT NULL,
+  `invoice_number` varchar(50) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Đang đổ dữ liệu cho bảng `invoices`
+--
+
+INSERT INTO `invoices` (`id`, `order_id`, `content`, `created_at`, `created_by`, `notes`, `invoice_number`) VALUES
+(1, 1, '{\"id\":1,\"user_id\":2,\"customer_name\":\"Nguyễn Văn A\",\"customer_email\":\"nguyenvana@example.com\",\"contact_phone\":\"0987654321\",\"shipping_address\":\"123 Đường ABC, Quận 1, TP.HCM\",\"payment_method\":\"cod\",\"status\":\"completed\",\"note\":\"Giao vào buổi sáng\",\"total_amount\":590000,\"created_at\":\"2023-06-15 09:30:00\",\"updated_at\":\"2023-06-15 14:20:00\",\"user_name\":\"Nguyễn Văn A\",\"user_email\":\"nguyenvana@example.com\",\"items\":[{\"id\":1,\"order_id\":1,\"product_id\":3,\"quantity\":2,\"price\":295000,\"name\":\"Áo thun nam\",\"image_url\":\"/images/products/ao-thun-1.jpg\"}]}', '2023-06-15 15:00:00', 1, NULL, 'INV-2023-001'),
+(2, 2, '{\"id\":2,\"user_id\":3,\"customer_name\":\"Trần Thị B\",\"customer_email\":\"tranthib@example.com\",\"contact_phone\":\"0901234567\",\"shipping_address\":\"456 Đường XYZ, Quận 2, TP.HCM\",\"payment_method\":\"banking\",\"status\":\"completed\",\"note\":\"\",\"total_amount\":850000,\"created_at\":\"2023-06-18 10:45:00\",\"updated_at\":\"2023-06-18 16:30:00\",\"user_name\":\"Trần Thị B\",\"user_email\":\"tranthib@example.com\",\"items\":[{\"id\":2,\"order_id\":2,\"product_id\":5,\"quantity\":1,\"price\":450000,\"name\":\"Quần jean nam\",\"image_url\":\"/images/products/quan-jean-1.jpg\"},{\"id\":3,\"order_id\":2,\"product_id\":7,\"quantity\":1,\"price\":400000,\"name\":\"Áo khoác nữ\",\"image_url\":\"/images/products/ao-khoac-1.jpg\"}]}', '2023-06-18 17:00:00', 1, NULL, 'INV-2023-002'),
+(3, 3, '{\"id\":3,\"user_id\":4,\"customer_name\":\"Lê Văn C\",\"customer_email\":\"levanc@example.com\",\"contact_phone\":\"0912345678\",\"shipping_address\":\"789 Đường MNO, Quận 3, TP.HCM\",\"payment_method\":\"cod\",\"status\":\"completed\",\"note\":\"Gọi trước khi giao\",\"total_amount\":1200000,\"created_at\":\"2023-07-05 14:20:00\",\"updated_at\":\"2023-07-05 18:45:00\",\"user_name\":\"Lê Văn C\",\"user_email\":\"levanc@example.com\",\"items\":[{\"id\":4,\"order_id\":3,\"product_id\":9,\"quantity\":1,\"price\":1200000,\"name\":\"Giày thể thao nam\",\"image_url\":\"/images/products/giay-1.jpg\"}]}', '2023-07-05 19:00:00', 2, NULL, 'INV-2023-003'),
+(4, 4, '{\"id\":4,\"user_id\":5,\"customer_name\":\"Phạm Thị D\",\"customer_email\":\"phamthid@example.com\",\"contact_phone\":\"0976543210\",\"shipping_address\":\"101 Đường PQR, Quận 4, TP.HCM\",\"payment_method\":\"banking\",\"status\":\"completed\",\"note\":\"\",\"total_amount\":750000,\"created_at\":\"2023-07-12 09:15:00\",\"updated_at\":\"2023-07-12 15:40:00\",\"user_name\":\"Phạm Thị D\",\"user_email\":\"phamthid@example.com\",\"items\":[{\"id\":5,\"order_id\":4,\"product_id\":12,\"quantity\":3,\"price\":250000,\"name\":\"Áo sơ mi nữ\",\"image_url\":\"/images/products/ao-somi-1.jpg\"}]}', '2023-07-12 16:00:00', 1, NULL, 'INV-2023-004'),
+(5, 5, '{\"id\":5,\"user_id\":2,\"customer_name\":\"Nguyễn Văn A\",\"customer_email\":\"nguyenvana@example.com\",\"contact_phone\":\"0987654321\",\"shipping_address\":\"123 Đường ABC, Quận 1, TP.HCM\",\"payment_method\":\"cod\",\"status\":\"completed\",\"note\":\"\",\"total_amount\":1500000,\"created_at\":\"2023-08-03 11:30:00\",\"updated_at\":\"2023-08-03 17:20:00\",\"user_name\":\"Nguyễn Văn A\",\"user_email\":\"nguyenvana@example.com\",\"items\":[{\"id\":6,\"order_id\":5,\"product_id\":15,\"quantity\":1,\"price\":1500000,\"name\":\"Túi xách nữ\",\"image_url\":\"/images/products/tui-xach-1.jpg\"}]}', '2023-08-03 18:00:00', 2, NULL, 'INV-2023-005'),
+(6, 6, '{\"id\":6,\"user_id\":3,\"customer_name\":\"Trần Thị B\",\"customer_email\":\"tranthib@example.com\",\"contact_phone\":\"0901234567\",\"shipping_address\":\"456 Đường XYZ, Quận 2, TP.HCM\",\"payment_method\":\"banking\",\"status\":\"completed\",\"note\":\"Giao vào buổi tối\",\"total_amount\":980000,\"created_at\":\"2023-08-20 15:45:00\",\"updated_at\":\"2023-08-20 19:30:00\",\"user_name\":\"Trần Thị B\",\"user_email\":\"tranthib@example.com\",\"items\":[{\"id\":7,\"order_id\":6,\"product_id\":18,\"quantity\":2,\"price\":490000,\"name\":\"Đồng hồ nam\",\"image_url\":\"/images/products/dong-ho-1.jpg\"}]}', '2023-08-20 20:00:00', 1, NULL, 'INV-2023-006'),
+(7, 7, '{\"id\":7,\"user_id\":4,\"customer_name\":\"Lê Văn C\",\"customer_email\":\"levanc@example.com\",\"contact_phone\":\"0912345678\",\"shipping_address\":\"789 Đường MNO, Quận 3, TP.HCM\",\"payment_method\":\"cod\",\"status\":\"completed\",\"note\":\"\",\"total_amount\":2200000,\"created_at\":\"2023-09-08 10:20:00\",\"updated_at\":\"2023-09-08 16:45:00\",\"user_name\":\"Lê Văn C\",\"user_email\":\"levanc@example.com\",\"items\":[{\"id\":8,\"order_id\":7,\"product_id\":20,\"quantity\":1,\"price\":2200000,\"name\":\"Laptop sleeve\",\"image_url\":\"/images/products/laptop-sleeve-1.jpg\"}]}', '2023-09-08 17:00:00', 2, NULL, 'INV-2023-007'),
+(8, 8, '{\"id\":8,\"user_id\":5,\"customer_name\":\"Phạm Thị D\",\"customer_email\":\"phamthid@example.com\",\"contact_phone\":\"0976543210\",\"shipping_address\":\"101 Đường PQR, Quận 4, TP.HCM\",\"payment_method\":\"banking\",\"status\":\"completed\",\"note\":\"Gọi trước khi giao\",\"total_amount\":650000,\"created_at\":\"2023-09-15 14:30:00\",\"updated_at\":\"2023-09-15 19:20:00\",\"user_name\":\"Phạm Thị D\",\"user_email\":\"phamthid@example.com\",\"items\":[{\"id\":9,\"order_id\":8,\"product_id\":22,\"quantity\":1,\"price\":650000,\"name\":\"Balo nam\",\"image_url\":\"/images/products/balo-1.jpg\"}]}', '2023-09-15 20:00:00', 1, NULL, 'INV-2023-008'),
+(9, 9, '{\"id\":9,\"user_id\":2,\"customer_name\":\"Nguyễn Văn A\",\"customer_email\":\"nguyenvana@example.com\",\"contact_phone\":\"0987654321\",\"shipping_address\":\"123 Đường ABC, Quận 1, TP.HCM\",\"payment_method\":\"cod\",\"status\":\"completed\",\"note\":\"\",\"total_amount\":1850000,\"created_at\":\"2023-10-05 09:15:00\",\"updated_at\":\"2023-10-05 15:40:00\",\"user_name\":\"Nguyễn Văn A\",\"user_email\":\"nguyenvana@example.com\",\"items\":[{\"id\":10,\"order_id\":9,\"product_id\":25,\"quantity\":1,\"price\":1850000,\"name\":\"Áo khoác nam cao cấp\",\"image_url\":\"/images/products/ao-khoac-nam-2.jpg\"}]}', '2023-10-05 16:00:00', 2, NULL, 'INV-2023-009'),
+(10, 10, '{\"id\":10,\"user_id\":3,\"customer_name\":\"Trần Thị B\",\"customer_email\":\"tranthib@example.com\",\"contact_phone\":\"0901234567\",\"shipping_address\":\"456 Đường XYZ, Quận 2, TP.HCM\",\"payment_method\":\"banking\",\"status\":\"completed\",\"note\":\"\",\"total_amount\":3500000,\"created_at\":\"2023-10-18 11:30:00\",\"updated_at\":\"2023-10-18 17:20:00\",\"user_name\":\"Trần Thị B\",\"user_email\":\"tranthib@example.com\",\"items\":[{\"id\":11,\"order_id\":10,\"product_id\":28,\"quantity\":1,\"price\":3500000,\"name\":\"Váy dạ hội\",\"image_url\":\"/images/products/vay-1.jpg\"}]}', '2023-10-18 18:00:00', 1, NULL, 'INV-2023-010');
+
+-- --------------------------------------------------------
+
+--
 -- Cấu trúc bảng cho bảng `orders`
 --
 
@@ -91,9 +123,9 @@ CREATE TABLE `orders` (
 
 INSERT INTO `orders` (`id`, `user_id`, `total_amount`, `status`, `shipping_address`, `contact_phone`, `created_at`, `updated_at`, `customer_name`, `customer_email`, `payment_method`, `note`) VALUES
 (1, 1, 590000.00, 'pending', '1111111111111111111', '01111111111111', '2025-04-16 13:06:08', '2025-04-16 13:18:53', NULL, NULL, '', '0'),
-(2, NULL, 180000.00, 'pending', '111111111111111111111', '01111111111111', '2025-04-16 13:35:35', '2025-04-16 13:35:35', 'Mai Hoàng Minh', 'nguyenvana@gmail.com', 'cod', NULL),
+(2, NULL, 180000.00, 'completed', '111111111111111111111', '01111111111111', '2025-04-16 13:35:35', '2025-04-17 17:33:22', 'Mai Hoàng Minh', 'nguyenvana@gmail.com', 'cod', NULL),
 (3, NULL, 450000.00, 'pending', '111111', '2147483647', '2025-04-16 13:39:42', '2025-04-16 13:39:42', 'Mai Hoàng Minh', 'nguyenvana@gmail.com', 'cod', NULL),
-(4, 2, 900000.00, 'processing', '11111111', '01111111111111', '2025-04-16 13:42:09', '2025-04-16 14:17:30', 'Mai Hoàng Minh', 'nguyenvana@gmail.com', 'cod', NULL);
+(4, 2, 900000.00, 'completed', '11111111', '01111111111111', '2025-04-16 13:42:09', '2025-04-17 17:33:12', 'Mai Hoàng Minh', 'nguyenvana@gmail.com', 'cod', NULL);
 
 -- --------------------------------------------------------
 
@@ -150,7 +182,9 @@ INSERT INTO `order_status_history` (`id`, `order_id`, `status`, `note`, `created
 (1, 2, 'pending', 'Đơn hàng mới được tạo', '2025-04-16 13:35:35'),
 (2, 3, 'pending', 'Đơn hàng mới được tạo', '2025-04-16 13:39:42'),
 (3, 4, 'pending', 'Đơn hàng mới được tạo', '2025-04-16 13:42:09'),
-(4, 4, 'processing', '', '2025-04-16 14:17:30');
+(4, 4, 'processing', '', '2025-04-16 14:17:30'),
+(5, 4, 'completed', '', '2025-04-17 17:33:12'),
+(6, 2, 'completed', '', '2025-04-17 17:33:22');
 
 -- --------------------------------------------------------
 
@@ -180,7 +214,7 @@ INSERT INTO `products` (`id`, `category_id`, `name`, `description`, `price`, `st
 (3, 2, 'Cà phê Robusta Đắk Lắk', 'Cà phê Robusta được trồng tại Đắk Lắk, vùng đất đỏ bazan.', 120000.00, 197, '/images/products/3.jpg', '2025-04-16 12:21:50', '2025-04-16 14:24:52'),
 (4, 3, 'Cà phê Blend Truyền Thống', 'Blend giữa 30% Arabica và 70% Robusta, thích hợp pha phin.', 140000.00, 148, '/images/products/3.jpg', '2025-04-16 12:21:50', '2025-04-16 14:25:00'),
 (5, 3, 'Cà phê Blend Espresso', 'Blend đặc biệt dành cho máy Espresso, hậu vị caramel.', 160000.00, 79, '/images/products/3.jpg', '2025-04-16 12:21:50', '2025-04-16 14:25:04'),
-(6, 1, 'haaha', 'ahahahahah', 200000.00, 10, '/images/products/product-1744813429329-592076538.jpg', '2025-04-16 14:23:49', '2025-04-16 14:23:49');
+(6, 1, 'haaha', 'ahahahahah', 200000.00, 11, '/images/products/product-1744813429329-592076538.jpg', '2025-04-16 14:23:49', '2025-04-17 17:50:22');
 
 -- --------------------------------------------------------
 
@@ -244,7 +278,8 @@ INSERT INTO `stock_history` (`id`, `product_id`, `before_quantity`, `change_quan
 (18, 2, 34, -2, 32, 'order', 1, 'Đơn hàng #ORD-2023-001', NULL, '2025-04-17 08:00:00'),
 (19, 6, 40, -4, 36, 'order', 2, 'Đơn hàng #ORD-2023-002', NULL, '2025-04-17 08:00:00'),
 (20, 8, 15, -3, 12, 'order', 3, 'Đơn hàng #ORD-2023-003', NULL, '2025-04-17 08:00:00'),
-(21, 9, 13, -1, 12, 'order', 3, 'Đơn hàng #ORD-2023-003', NULL, '2025-04-17 08:00:00');
+(21, 9, 13, -1, 12, 'order', 3, 'Đơn hàng #ORD-2023-003', NULL, '2025-04-17 08:00:00'),
+(22, 6, 10, 1, 11, 'import', 12, 'Nhập kho từ phiếu NK-20250418-001', 2, '2025-04-17 17:50:22');
 
 -- --------------------------------------------------------
 
@@ -274,7 +309,8 @@ INSERT INTO `stock_imports` (`id`, `supplier_id`, `import_date`, `import_code`, 
 (7, 2, '2023-10-22', 'NK-202310-0002', 12000000.00, 'partial', 'Máy xay cà phê và phụ kiện', 1, '2025-04-17 08:00:00', '2025-04-17 08:00:00'),
 (8, 3, '2023-11-05', 'NK-202311-0001', 3200000.00, 'unpaid', 'Nhập bộ cốc và ly mới', 2, '2025-04-17 08:00:00', '2025-04-17 08:00:00'),
 (9, 4, '2023-11-12', 'NK-202311-0002', 2800000.00, 'paid', 'Nguyên liệu làm bánh và topping', 2, '2025-04-17 08:00:00', '2025-04-17 08:00:00'),
-(10, 1, '2023-11-20', 'NK-202311-0003', 4500000.00, 'paid', 'Nhập cà phê hạt đợt 2', 3, '2025-04-17 08:00:00', '2025-04-17 08:00:00');
+(10, 1, '2023-11-20', 'NK-202311-0003', 4500000.00, 'paid', 'Nhập cà phê hạt đợt 2', 3, '2025-04-17 08:00:00', '2025-04-17 08:00:00'),
+(12, 7, '2025-04-17', 'NK-20250418-001', 200000.00, '', NULL, 2, '2025-04-17 17:50:22', '2025-04-17 17:50:22');
 
 -- --------------------------------------------------------
 
@@ -289,25 +325,27 @@ CREATE TABLE `stock_import_items` (
   `quantity` int(11) NOT NULL,
   `import_price` decimal(10,2) NOT NULL,
   `total_price` decimal(10,2) NOT NULL,
-  `note` text DEFAULT NULL
+  `note` text DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Đang đổ dữ liệu cho bảng `stock_import_items`
 --
 
-INSERT INTO `stock_import_items` (`id`, `import_id`, `product_id`, `quantity`, `import_price`, `total_price`, `note`) VALUES
-(1, 1, 1, 20, 120000.00, 2400000.00, 'Cà phê Arabica hạt 1kg'),
-(2, 1, 2, 15, 90000.00, 1350000.00, 'Cà phê Robusta hạt 1kg'),
-(3, 1, 3, 10, 200000.00, 2000000.00, 'Cà phê Arabica Premium 1kg'),
-(4, 2, 4, 2, 5000000.00, 10000000.00, 'Máy xay cà phê chuyên nghiệp'),
-(5, 2, 5, 5, 400000.00, 2000000.00, 'Bình sữa tạo bọt'),
-(6, 3, 6, 40, 50000.00, 2000000.00, 'Ly thủy tinh cao cấp'),
-(7, 3, 7, 30, 40000.00, 1200000.00, 'Ly sứ espresso'),
-(8, 4, 8, 20, 50000.00, 1000000.00, 'Siro hương vị trái cây'),
-(9, 4, 9, 15, 120000.00, 1800000.00, 'Bột làm bánh'),
-(10, 5, 1, 30, 100000.00, 3000000.00, 'Cà phê Arabica hạt 1kg'),
-(11, 5, 2, 20, 75000.00, 1500000.00, 'Cà phê Robusta hạt 1kg');
+INSERT INTO `stock_import_items` (`id`, `import_id`, `product_id`, `quantity`, `import_price`, `total_price`, `note`, `created_at`) VALUES
+(1, 1, 1, 20, 120000.00, 2400000.00, 'Cà phê Arabica hạt 1kg', NULL),
+(2, 1, 2, 15, 90000.00, 1350000.00, 'Cà phê Robusta hạt 1kg', NULL),
+(3, 1, 3, 10, 200000.00, 2000000.00, 'Cà phê Arabica Premium 1kg', NULL),
+(4, 2, 4, 2, 5000000.00, 10000000.00, 'Máy xay cà phê chuyên nghiệp', NULL),
+(5, 2, 5, 5, 400000.00, 2000000.00, 'Bình sữa tạo bọt', NULL),
+(6, 3, 6, 40, 50000.00, 2000000.00, 'Ly thủy tinh cao cấp', NULL),
+(7, 3, 7, 30, 40000.00, 1200000.00, 'Ly sứ espresso', NULL),
+(8, 4, 8, 20, 50000.00, 1000000.00, 'Siro hương vị trái cây', NULL),
+(9, 4, 9, 15, 120000.00, 1800000.00, 'Bột làm bánh', NULL),
+(10, 5, 1, 30, 100000.00, 3000000.00, 'Cà phê Arabica hạt 1kg', NULL),
+(11, 5, 2, 20, 75000.00, 1500000.00, 'Cà phê Robusta hạt 1kg', NULL),
+(12, 12, 6, 1, 200000.00, 200000.00, NULL, '2025-04-17 17:50:22');
 
 -- --------------------------------------------------------
 
@@ -356,20 +394,22 @@ CREATE TABLE `users` (
   `email` varchar(100) NOT NULL,
   `password` varchar(255) NOT NULL,
   `role` enum('admin','customer','warehouse','sale','manager') DEFAULT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `status` varchar(20) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Đang đổ dữ liệu cho bảng `users`
 --
 
-INSERT INTO `users` (`id`, `name`, `email`, `password`, `role`, `created_at`) VALUES
-(1, 'Admin', 'admin@coffeeshop.com', '$2b$10$D.DJ2g05AziwWg/99SXvOOedwkiOQmptEabPcJn2DZR9W7etygwOS', 'admin', '2025-04-16 12:21:50'),
-(2, 'Mai Hoàng Minh', 'nguyenvana@gmail.com', '$2b$10$D.DJ2g05AziwWg/99SXvOOedwkiOQmptEabPcJn2DZR9W7etygwOS', 'admin', '2025-04-16 13:40:33'),
-(3, 'Nguyễn Hoài Nam', 'nam@gmail.com', '$2b$10$D.DJ2g05AziwWg/99SXvOOedwkiOQmptEabPcJn2DZR9W7etygwOS', 'manager', '2025-04-17 09:18:55'),
-(4, 'Nguyễn Đức Minh', 'minh@gmail.com', '$2b$10$D.DJ2g05AziwWg/99SXvOOedwkiOQmptEabPcJn2DZR9W7etygwOS', 'warehouse', '2025-04-17 09:19:29'),
-(5, 'enum', 'enum@gmail.com', '$2b$10$D.DJ2g05AziwWg/99SXvOOedwkiOQmptEabPcJn2DZR9W7etygwOS', 'customer', '2025-04-17 09:19:29'),
-(6, 'Phạm Thiên Phúc', 'phuc@gmail.com', '$2b$10$D.DJ2g05AziwWg/99SXvOOedwkiOQmptEabPcJn2DZR9W7etygwOS', 'sale', '2025-04-17 09:19:55');
+INSERT INTO `users` (`id`, `name`, `email`, `password`, `role`, `created_at`, `status`) VALUES
+(1, 'Admin', 'admin@coffeeshop.com', '$2b$10$D.DJ2g05AziwWg/99SXvOOedwkiOQmptEabPcJn2DZR9W7etygwOS', 'admin', '2025-04-16 12:21:50', ''),
+(2, 'Mai Hoàng Minh', 'nguyenvana@gmail.com', '$2b$10$D.DJ2g05AziwWg/99SXvOOedwkiOQmptEabPcJn2DZR9W7etygwOS', 'admin', '2025-04-16 13:40:33', ''),
+(3, 'Nguyễn Hoài Nam', 'nam@gmail.com', '$2b$10$D.DJ2g05AziwWg/99SXvOOedwkiOQmptEabPcJn2DZR9W7etygwOS', 'manager', '2025-04-17 09:18:55', ''),
+(4, 'Nguyễn Đức Minh', 'minh@gmail.com', '$2b$10$D.DJ2g05AziwWg/99SXvOOedwkiOQmptEabPcJn2DZR9W7etygwOS', 'warehouse', '2025-04-17 09:19:29', ''),
+(5, 'enum', 'enum@gmail.com', '$2b$10$D.DJ2g05AziwWg/99SXvOOedwkiOQmptEabPcJn2DZR9W7etygwOS', 'customer', '2025-04-17 09:19:29', ''),
+(6, 'Phạm Thiên Phúc', 'phuc@gmail.com', '$2b$10$D.DJ2g05AziwWg/99SXvOOedwkiOQmptEabPcJn2DZR9W7etygwOS', 'sale', '2025-04-17 09:19:55', ''),
+(7, 'Nguyễn Văn A', '111@gmail.com', '$2b$10$hmkfkzO..7f3st0IffZaGOOuQ6ivfPmoPGaojCn/I1uta0TiStQn6', 'sale', '2025-04-17 16:35:57', 'active');
 
 --
 -- Chỉ mục cho các bảng đã đổ
@@ -387,6 +427,14 @@ ALTER TABLE `categories`
 ALTER TABLE `customers`
   ADD PRIMARY KEY (`id`),
   ADD KEY `user_id` (`user_id`);
+
+--
+-- Chỉ mục cho bảng `invoices`
+--
+ALTER TABLE `invoices`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `fk_invoices_orders` (`order_id`),
+  ADD KEY `fk_invoices_users` (`created_by`);
 
 --
 -- Chỉ mục cho bảng `orders`
@@ -479,6 +527,12 @@ ALTER TABLE `customers`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT cho bảng `invoices`
+--
+ALTER TABLE `invoices`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+
+--
 -- AUTO_INCREMENT cho bảng `orders`
 --
 ALTER TABLE `orders`
@@ -494,7 +548,7 @@ ALTER TABLE `order_items`
 -- AUTO_INCREMENT cho bảng `order_status_history`
 --
 ALTER TABLE `order_status_history`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT cho bảng `products`
@@ -512,19 +566,19 @@ ALTER TABLE `shipping`
 -- AUTO_INCREMENT cho bảng `stock_history`
 --
 ALTER TABLE `stock_history`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
 
 --
 -- AUTO_INCREMENT cho bảng `stock_imports`
 --
 ALTER TABLE `stock_imports`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT cho bảng `stock_import_items`
 --
 ALTER TABLE `stock_import_items`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT cho bảng `suppliers`
@@ -536,7 +590,7 @@ ALTER TABLE `suppliers`
 -- AUTO_INCREMENT cho bảng `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- Các ràng buộc cho các bảng đã đổ
@@ -547,6 +601,13 @@ ALTER TABLE `users`
 --
 ALTER TABLE `customers`
   ADD CONSTRAINT `customers_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
+-- Các ràng buộc cho bảng `invoices`
+--
+ALTER TABLE `invoices`
+  ADD CONSTRAINT `fk_invoices_orders` FOREIGN KEY (`order_id`) REFERENCES `orders` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_invoices_users` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`);
 
 --
 -- Các ràng buộc cho bảng `orders`

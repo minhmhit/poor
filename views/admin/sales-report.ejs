@@ -143,7 +143,7 @@
               <div class="card bg-primary text-white mb-4">
                 <div class="card-body">
                   <h5 class="card-title">Tổng số đơn hàng</h5>
-                  <h2 class="display-4"><%= salesStats.total.order_count || 0 %></h2>
+                  <h2 class="display-7"><%= salesStats.total.order_count || 0 %></h2>
                 </div>
               </div>
             </div>
@@ -151,7 +151,7 @@
               <div class="card bg-success text-white mb-4">
                 <div class="card-body">
                   <h5 class="card-title">Tổng doanh thu</h5>
-                  <h2 class="display-4"><%= (salesStats.total.revenue || 0).toLocaleString('vi-VN') %> đ</h2>
+                  <h2 class="display-7"><%= parseInt(salesStats.total.revenue || 0).toLocaleString('vi-VN') %> đ</h2>
                 </div>
               </div>
             </div>
@@ -159,7 +159,7 @@
               <div class="card bg-info text-white mb-4">
                 <div class="card-body">
                   <h5 class="card-title">Tổng lợi nhuận</h5>
-                  <h2 class="display-4"><%= (salesStats.total.profit || 0).toLocaleString('vi-VN') %> đ</h2>
+                  <h2 class="display-7"><%= parseInt(salesStats.total.profit || 0).toLocaleString('vi-VN') %> đ</h2>
                 </div>
               </div>
             </div>
@@ -167,7 +167,7 @@
               <div class="card bg-warning text-white mb-4">
                 <div class="card-body">
                   <h5 class="card-title">Tỷ suất lợi nhuận</h5>
-                  <h2 class="display-4">
+                  <h2 class="display-7">
                     <%= salesStats.total.revenue > 0 ? Math.round((salesStats.total.profit / salesStats.total.revenue) * 100) : 0 %>%
                   </h2>
                 </div>
