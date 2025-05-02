@@ -2,98 +2,7 @@
 
 <div class="container-fluid">
   <div class="row">
-    <!-- Sidebar -->
-    <!-- <div class="col-md-3 col-lg-2 d-md-block bg-light sidebar p-0 shadow-sm">
-      <div class="position-sticky">
-        <div class="p-3 bg-primary text-white">
-          <h6 class="sidebar-heading d-flex align-items-center mb-0">
-            <% if (user.role === 'admin') { %>
-            <i class="fas fa-user-shield me-2"></i> Quản lý doanh nghiệp
-            <% } else if (user.role === 'sale') { %>
-            <i class="fas fa-user-tag me-2"></i> Nhân Viên Bán hàng
-            <% } else if (user.role === 'warehouse') { %>
-            <i class="fas fa-warehouse me-2"></i>Quản lý Kho
-            <% } else if (user.role === 'manager') { %>
-            <i class="fas fa-user-tag me-2"></i> Admin server
-            <% } %>
-          </h6>
-        </div>
-        <ul class="nav flex-column p-2">
-          <li class="nav-item">
-            <a class="nav-link active rounded py-2" href="/admin">
-              <i class="fas fa-tachometer-alt me-2"></i>
-              Dashboard
-            </a>
-          </li>
-          
-          <% if (user.role === 'admin' || user.role === 'warehouse') { %>
-          <li class="nav-item mt-2">
-            <a class="nav-link rounded py-2" href="/admin/products">
-              <i class="fas fa-box me-2"></i>
-              Sản phẩm
-            </a>
-          </li>
-          
-          <li class="nav-item">
-            <a class="nav-link rounded py-2" href="/admin/categories">
-              <i class="fas fa-tags me-2"></i>
-              Danh mục
-            </a>
-          </li>
-          <% } %>
-          
-          <% if (user.role === 'admin' || user.role === 'sale') { %>
-          <li class="nav-item mt-2">
-            <a class="nav-link rounded py-2" href="/admin/orders">
-              <i class="fas fa-shopping-cart me-2"></i>
-              Đơn hàng
-            </a>
-          </li>
-          <% } %>
-          
-          <% if (user.role === 'admin' || user.role === 'manager') { %>
-          <li class="nav-item mt-2">
-            <a class="nav-link rounded py-2" href="/admin/users">
-              <i class="fas fa-users me-2"></i>
-              Người dùng
-            </a>
-          </li>
-          <% } %>
-          
-          <% if (user.role === 'admin' || user.role === 'warehouse') { %>
-          <li class="nav-item mt-2">
-            <a class="nav-link rounded py-2" href="/admin/suppliers">
-              <i class="fas fa-truck me-2"></i>
-              Nhà cung cấp
-            </a>
-          </li>
-          
-          <li class="nav-item">
-            <a class="nav-link rounded py-2" href="/admin/stock/imports">
-              <i class="fas fa-warehouse me-2"></i>
-              Nhập kho
-            </a>
-          </li>
-          <% } %>
-          
-          <% if (user.role === 'admin' || user.role === 'sale') { %>
-          <li class="nav-item mt-2">
-            <a class="nav-link rounded py-2" href="/admin/invoices">
-              <i class="fas fa-file-invoice-dollar me-2"></i>
-              Hóa đơn bán hàng
-            </a>
-          </li>
-          
-          <li class="nav-item">
-            <a class="nav-link rounded py-2" href="/admin/reports/sales">
-              <i class="fas fa-chart-bar me-2"></i>
-              Báo cáo doanh thu
-            </a>
-          </li>
-          <% } %>
-        </ul>
-      </div>
-    </div> -->
+    
     <%- include('../partials/admin-sidebar') %>
     <!-- Main content -->
     <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
@@ -202,13 +111,14 @@
                     </tr>
                   </thead>
                   <tbody>
+                    <!-- lấy thông tin đơn hàng gần nhất -->
                     <tr>
-                      <td>#1</td>
-                      <td>Khách hàng</td>
+                      <td>1</td>
+                      <td>Minh47</td>
                       <td><span class="badge bg-warning">Đang xử lý</span></td>
-                      <td>590,000 ₫</td>
+                      <td>3.120.000 ₫</td>
                       <td>
-                        <a href="/admin/orders/1" class="btn btn-sm btn-outline-info">
+                        <a href="/admin/orders/5" class="btn btn-sm btn-outline-info">
                           <i class="fas fa-eye"></i>
                         </a>
                       </td>

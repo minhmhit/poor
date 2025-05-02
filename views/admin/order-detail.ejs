@@ -24,7 +24,7 @@
             <div class="card-body">
               <p><strong>Mã đơn hàng:</strong> #<%= order.id %></p>
               <p><strong>Ngày đặt:</strong> <%= new Date(order.created_at).toLocaleString('vi-VN') %></p>
-              <p><strong>Tổng tiền:</strong> <%= order.total_amount.toLocaleString('vi-VN') %> ₫</p>
+              <p><strong>Tổng tiền:</strong> <%= parseInt(order.total_amount).toLocaleString('vi-VN') %> ₫</p>
               <p>
                 <strong>Trạng thái:</strong>
                 <% if (order.status === 'pending') { %>
@@ -59,6 +59,7 @@
           </div>
         </div>
 
+        
         <!-- Cập nhật trạng thái -->
         <div class="col-md-4">
           <div class="card mb-4">
@@ -66,22 +67,30 @@
               <h5 class="card-title mb-0">Cập nhật trạng thái</h5>
             </div>
             <div class="card-body">
-              <form action="/admin/orders/<%= order.id %>/update-status" method="POST">
-                <div class="mb-3">
-                  <label for="status" class="form-label">Trạng thái mới</label>
-                  <select class="form-select" id="status" name="status" required>
-                    <option value="pending" <%= order.status === 'pending' ? 'selected' : '' %>>Chờ xử lý</option>
-                    <option value="processing" <%= order.status === 'processing' ? 'selected' : '' %>>Đang xử lý</option>
-                    <option value="completed" <%= order.status === 'completed' ? 'selected' : '' %>>Hoàn thành</option>
-                    <option value="cancelled" <%= order.status === 'cancelled' ? 'selected' : '' %>>Đã hủy</option>
-                  </select>
-                </div>
-                <div class="mb-3">
-                  <label for="note" class="form-label">Ghi chú</label>
-                  <textarea class="form-control" id="note" name="note" rows="2"></textarea>
-                </div>
-                <button type="submit" class="btn btn-primary w-100">Cập nhật trạng thái</button>
-              </form>
+              <% if (order.status==='pending' || order.status==='processing' ) { %>
+                <form action="/admin/orders/<%= order.id %>/update-status" method="POST">
+                  <div class="mb-3">
+                    <label for="status" class="form-label">Trạng thái mới</label>
+                    <select class="form-select" id="status" name="status" required>
+                      <% if (order.status==='pending' ) { %>
+                        <option value="processing">Đang xử lý</option>
+                        <option value="completed">Hoàn thành</option>
+                        <option value="cancelled">Đã hủy</option>
+                        <% } else if (order.status==='processing' ) { %>
+                          <option value="completed">Hoàn thành</option>
+                          <option value="cancelled">Đã hủy</option>
+                          <% } %>
+                    </select>
+                  </div>
+                  <div class="mb-3">
+                    <label for="note" class="form-label">Ghi chú</label>
+                    <textarea class="form-control" id="note" name="note" rows="2"></textarea>
+                  </div>
+                  <button type="submit" class="btn btn-primary w-100">Cập nhật trạng thái</button>
+                </form>
+                <% } else { %>
+                  <p class="text-muted">Đơn hàng đã ở trạng thái cuối (Hoàn thành hoặc Đã hủy), không thể cập nhật.</p>
+                  <% } %>
             </div>
           </div>
         </div>
