@@ -172,35 +172,54 @@ const orderModel = {
   },
 
   // Cập nhật trạng thái đơn hàng
-  updateOrderStatus: async (id, status, note = null) => {
-    const connection = await pool.getConnection();
-    
-    try {
-      await connection.beginTransaction();
-      
-      // Cập nhật trạng thái đơn hàng
-      await connection.query(`
-        UPDATE orders
-        SET status = ?, updated_at = NOW()
-        WHERE id = ?
-      `, [status, id]);
-      
-      // Thêm vào lịch sử trạng thái
-      await connection.query(`
-        INSERT INTO order_status_history (order_id, status, note)
-        VALUES (?, ?, ?)
-      `, [id, status, note]);
-      
-      await connection.commit();
-      return true;
-    } catch (error) {
-      await connection.rollback();
-      console.error(`Lỗi khi cập nhật trạng thái đơn hàng ID ${id}:`, error);
-      throw error;
-    } finally {
-      connection.release();
+updateOrderStatus: async (id, status, note = null) => {
+  const connection = await pool.getConnection();
+
+  try {
+    await connection.beginTransaction();
+
+    // Cập nhật trạng thái đơn hàng
+    await connection.query(`
+      UPDATE orders
+      SET status = ?, updated_at = NOW()
+      WHERE id = ?
+    `, [status, id]);
+
+    // Thêm vào lịch sử trạng thái
+    await connection.query(`
+      INSERT INTO order_status_history (order_id, status, note)
+      VALUES (?, ?, ?)
+    `, [id, status, note]);
+
+    // Nếu trạng thái là 'cancelled', tăng lại số lượng tồn kho
+    if (status === 'cancelled') {
+      // Lấy danh sách sản phẩm trong đơn hàng
+      const [orderItems] = await connection.query(`
+        SELECT product_id, quantity
+        FROM order_items
+        WHERE order_id = ?
+      `, [id]);
+
+      // Cập nhật số lượng tồn kho cho từng sản phẩm
+      for (const item of orderItems) {
+        await connection.query(`
+          UPDATE products
+          SET stock = stock + ?
+          WHERE id = ?
+        `, [item.quantity, item.product_id]);
+      }
     }
-  },
+
+    await connection.commit();
+    return true;
+  } catch (error) {
+    await connection.rollback();
+    console.error(`Lỗi khi cập nhật trạng thái đơn hàng ID ${id}:`, error);
+    throw error;
+  } finally {
+    connection.release();
+  }
+},
 
   // Thêm thông tin vận chuyển
   addShippingInfo: async (orderId, shippingData) => {
