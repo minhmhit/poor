@@ -87,10 +87,10 @@
                                     </div>
                                     <div>
                                         <h6 class="mb-0"><%= item.item.name %></h6>
-                                        <small class="text-muted"><%= item.item.price.toLocaleString('vi-VN') %> ₫</small>
+                                        <small class="text-muted"><%= parseInt(item.item.price).toLocaleString('vi-VN') %> ₫</small>
                                     </div>
                                 </div>
-                                <span class="fw-bold"><%= item.price.toLocaleString('vi-VN') %> ₫</span>
+                                <span class="fw-bold"><%= parseInt(item.price).toLocaleString('vi-VN') %> ₫</span>
                             </div>
                         <% }) %>
                     </div>

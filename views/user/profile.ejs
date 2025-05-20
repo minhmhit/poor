@@ -21,9 +21,9 @@
                     <a href="/user/orders" class="list-group-item list-group-item-action">
                         <i class="fas fa-shopping-bag me-2"></i> Đơn hàng của tôi
                     </a>
-                    <a href="/auth/change-password" class="list-group-item list-group-item-action">
+                    <!-- <a href="/auth/change-password" class="list-group-item list-group-item-action">
                         <i class="fas fa-key me-2"></i> Đổi mật khẩu
-                    </a>
+                    </a> -->
                     <a href="/auth/logout" class="list-group-item list-group-item-action text-danger">
                         <i class="fas fa-sign-out-alt me-2"></i> Đăng xuất
                     </a>
@@ -59,10 +59,10 @@
                             <input type="email" class="form-control" id="email" name="email" value="<%= user.email %>" readonly>
                             <div class="form-text">Email không thể thay đổi</div>
                         </div>
-                        <div class="mb-3">
+                        <!-- <div class="mb-3">
                             <label for="phone" class="form-label">Số điện thoại</label>
                             <input type="tel" class="form-control" id="phone" name="phone" value="<%= user.phone || '' %>">
-                        </div>
+                        </div> -->
                         <div class="mb-3">
                             <label for="address" class="form-label">Địa chỉ</label>
                             <textarea class="form-control" id="address" name="address" rows="3"><%= user.address || '' %></textarea>
