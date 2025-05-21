@@ -126,6 +126,48 @@
 </div>
 
 <script>
+    document.addEventListener('DOMContentLoaded', function () {
+            const decreaseBtn = document.getElementById('decrease-qty');
+            const increaseBtn = document.getElementById('increase-qty');
+            const quantityInput = document.getElementById('product-quantity');
+            const stock = parseInt('<%= product.stock %>', 10);
+
+            // Hàm cập nhật số lượng
+            function updateQuantity(change) {
+                let currentQuantity = parseInt(quantityInput.value, 10);
+                let newQuantity = currentQuantity + change;
+
+                // Đảm bảo số lượng không nhỏ hơn 1 và không lớn hơn stock
+                if (newQuantity < 1) {
+                    newQuantity = 1;
+                } else if (newQuantity > stock) {
+                    newQuantity = stock;
+                }
+
+                quantityInput.value = newQuantity;
+            }
+
+            // Xử lý nút giảm
+            decreaseBtn.addEventListener('click', function () {
+                updateQuantity(-1);
+            });
+
+            // Xử lý nút tăng
+            increaseBtn.addEventListener('click', function () {
+                updateQuantity(1);
+            });
+
+            // Xử lý khi người dùng nhập thủ công
+            quantityInput.addEventListener('input', function () {
+                let currentQuantity = parseInt(quantityInput.value, 10);
+                if (isNaN(currentQuantity) || currentQuantity < 1) {
+                    quantityInput.value = 1;
+                } else if (currentQuantity > stock) {
+                    quantityInput.value = stock;
+                }
+            });
+    });
+
     document.addEventListener('DOMContentLoaded', function() {
         const quantityInput = document.getElementById('product-quantity');
         const decreaseBtn = document.getElementById('decrease-qty');

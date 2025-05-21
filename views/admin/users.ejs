@@ -120,7 +120,7 @@
                       <a href="/admin/users/<%= user.id %>/edit" class="btn btn-outline-secondary" title="Chỉnh sửa">
                         <i class="fas fa-edit"></i>
                       </a>
-                      <% if (user.role !== 'admin') { %>
+                      <% if (user.role == 'user') { %>
                         <a href="#" class="btn btn-outline-danger" title="Xóa" 
                            onclick="confirmDelete('<%= user.id %>', '<%= user.name %>')">
                           <i class="fas fa-trash"></i>

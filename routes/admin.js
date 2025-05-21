@@ -657,6 +657,7 @@ router.get('/users/:id/edit', async (req, res) => {
 
 // Quản lý người dùng - xử lý sửa thông tin
 router.post('/users/:id/edit', async (req, res) => {
+  console.log('Dữ liệu gửi từ form:', req.body);
   try {
     const userId = req.params.id;
     const userData = req.body;
@@ -665,24 +666,13 @@ router.post('/users/:id/edit', async (req, res) => {
     await adminModel.updateUserInfo(userId, userData);
     
     // Cập nhật vai trò nếu có
-    if (userData.role) {
+    if (userData.role && userData.role !== '') {
       await adminModel.updateUserRole(userId, userData.role);
     }
     
     // Cập nhật trạng thái nếu có
     if (userData.status) {
       await adminModel.updateUserStatus(userId, userData.status);
-    }
-    
-    // Cập nhật quyền chi tiết nếu có
-    if (userData.permissions) {
-      // Nếu permissions được gửi là một giá trị đơn (không phải mảng), 
-      // thì chuyển thành mảng có một phần tử
-      const permissions = Array.isArray(userData.permissions) ? userData.permissions : [userData.permissions];
-      await adminModel.updateUserPermissions(userId, permissions);
-    } else {
-      // Nếu không có quyền nào được chọn, gán mảng rỗng
-      await adminModel.updateUserPermissions(userId, []);
     }
     
     req.flash('success', 'Đã cập nhật thông tin người dùng thành công');

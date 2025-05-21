@@ -206,7 +206,7 @@ const adminModel = {
   },
   
   // Cập nhật quyền người dùng
-  updateUserRole: async (id, role) => {
+  updateUserRole: async (id, role) => {    
     try {
       const [result] = await pool.query(`
         UPDATE users SET role = ? WHERE id = ?
@@ -251,23 +251,7 @@ const adminModel = {
     }
   },
   
-  // Cập nhật quyền người dùng
-  updateUserPermissions: async (id, permissions) => {
-    try {
-      // Lưu dưới dạng JSON
-      const permissionsJSON = JSON.stringify(permissions);
-      
-      const [result] = await pool.query(`
-        UPDATE users SET role = ? WHERE id = ?
-      `, [permissionsJSON, id]);
-      
-      return result.affectedRows > 0;
-    } catch (error) {
-      console.error(`Lỗi khi cập nhật quyền chi tiết cho người dùng ID ${id}:`, error);
-      throw error;
-    }
-  },
-  
+ 
   // Đếm số người dùng theo quyền
   countUsersByRole: async () => {
     try {
